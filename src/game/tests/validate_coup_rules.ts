@@ -58,4 +58,36 @@ invalidEngine.passChallenge(invalidEngine.debugState().players[2].id);
 invalidEngine.resolvePendingAction();
 invalidEngine.endTurn();
 
+const peekEngine = new GameEngine(['Gabriel', 'Bot 1', 'Bot 2']);
+peekEngine.startGame();
+const [diplomat, peekTarget, peekObserver] = peekEngine.debugState().players;
+const targetInfluence = peekTarget.influences.find((influence) => !influence.revealed);
+assert(Boolean(targetInfluence), 'Target must have a hidden influence to be spied');
+
+peekEngine.declareAction({
+  actorId: diplomat.id,
+  type: ActionType.NEGOCIACAO,
+  targetId: peekTarget.id,
+  targetInfluenceId: targetInfluence!.id,
+});
+peekEngine.passChallenge(peekTarget.id);
+peekEngine.passChallenge(peekObserver.id);
+
+const peekResult = peekEngine.resolvePendingAction();
+assert(Boolean(peekResult.peekedInfluence), 'Negotiation spy should return the peeked influence');
+assert(peekEngine.getState().phase === GamePhase.TURN_END, 'Spy negotiation should wait at turn end');
+assert(
+  peekEngine.getState().privatePeekedInfluence?.targetPlayerId === peekTarget.id,
+  'Spied influence should remain private until the turn ends',
+);
+assert(
+  peekEngine.getState().privatePeekedInfluence?.influence.id === targetInfluence!.id,
+  'The selected hidden influence should be the one shown privately',
+);
+peekEngine.endTurn();
+assert(
+  !peekEngine.getState().privatePeekedInfluence,
+  'Private spy information should be cleared on the next turn',
+);
+
 console.log('--- Coup Rules Validation Successful ---');

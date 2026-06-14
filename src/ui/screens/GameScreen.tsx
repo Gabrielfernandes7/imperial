@@ -57,6 +57,7 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
   const [isSelectingSpyTarget, setIsSelectingSpyTarget] = useState(false);
   const [peekModalVisible, setPeekModalVisible] = useState(false);
   const [peekedPlayerName, setPeekedPlayerName] = useState<string>('');
+  const [lastPeekKey, setLastPeekKey] = useState('');
   const [promptState, setPromptState] = useState<{
     title: string;
     subtitle?: string;
@@ -66,11 +67,13 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
   const botTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleResolveAction = () => {
+    // Capture necessary data before resolution as state might change
+    const targetId = state?.pendingAction?.action.targetId;
+    const targetName = state?.players.find((p) => p.id === targetId)?.name ?? 'Adversário';
+
     const res = resolveAction();
-    if (res?.peekedInfluence && state) {
-      const targetName =
-        state.players.find((player) => player.id === state.pendingAction?.action.targetId)?.name ??
-        'Adversário';
+
+    if (res?.peekedInfluence) {
       setPeekedPlayerName(targetName);
       setPeekModalVisible(true);
     }
@@ -91,6 +94,24 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
       setIsSelectingSpyTarget(false);
     }
   }, [state?.phase]);
+
+  useEffect(() => {
+    const peek = state?.privatePeekedInfluence;
+    if (!peek || !state) {
+      return;
+    }
+
+    const key = `${state.turnNumber}:${peek.targetPlayerId}:${peek.influence.id}`;
+    if (key === lastPeekKey) {
+      return;
+    }
+
+    setLastPeekKey(key);
+    setPeekedPlayerName(
+      state.players.find((player) => player.id === peek.targetPlayerId)?.name ?? 'Adversário',
+    );
+    setPeekModalVisible(true);
+  }, [lastPeekKey, state]);
 
   useEffect(() => {
     if (!state || state.phase !== GamePhase.GAME_OVER) {
@@ -494,7 +515,7 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
         icon={<Eye color="#1E5631" size={20} />}
         onClose={() => setPeekModalVisible(false)}
       >
-        {state.privatePeekedInfluence && (
+        {state.privatePeekedInfluence?.influence && (
           <View className="mt-1 items-center">
             <View className="w-52 rounded-[28px] border border-imperial-gold/25 bg-white p-3 shadow-sm">
               <InfluenceCard

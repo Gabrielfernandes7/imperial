@@ -69,9 +69,18 @@ export class ActionResolver {
           return { success: true, message: 'Escolha a carta.', stateChanged: true };
         } else {
           const targetPlayer = getPlayerById(action.targetId);
+          if (!targetPlayer) {
+            return { success: false, message: 'Alvo não encontrado.', stateChanged: false };
+          }
+
           const hiddenInfluence = targetPlayer.influences.find(
             (inf: any) => inf.id === action.targetInfluenceId && !inf.revealed,
           );
+
+          if (!hiddenInfluence || !hiddenInfluence.character) {
+            return { success: false, message: 'Influência inválida ou já revelada.', stateChanged: false };
+          }
+
           const peekedInfluence = { ...hiddenInfluence, character: { ...hiddenInfluence.character } };
           state.privatePeekedInfluence = {
             viewerId: actor.id,
@@ -83,7 +92,7 @@ export class ActionResolver {
           state.pendingAction = undefined;
           state.phase = GamePhase.TURN_END;
           checkWinner();
-          return { success: true, message: 'Ação resolvida.', stateChanged: true };
+          return { success: true, message: 'Ação resolvida.', stateChanged: true, peekedInfluence: peekedInfluence };
         }
       }
       case ActionType.CONTRABANDO: {

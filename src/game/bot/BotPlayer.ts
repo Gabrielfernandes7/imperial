@@ -6,6 +6,7 @@ import { CharacterClaims } from '../rules/CharacterClaims';
 import { BlockClaims } from '../rules/BlockClaims';
 import { GameRules } from '../rules/GameRules';
 import { GameMode } from '../models/GameMode';
+import { BotIA } from './BotIA';
 
 interface BotProfile {
   bluffRate: number;
@@ -51,12 +52,11 @@ const BOT_PROFILES: Record<GameMode, BotProfile> = {
   },
 };
 
-export class BotPlayer {
-  static decideAction(state: MatchState, playerId: string): Action {
+export class BotPlayer implements BotIA {
+  public decideAction(state: MatchState, playerId: string): Action {
     const bot = state.players.find(p => p.id === playerId)!;
     const profile = this.getProfile(state);
     
-    // Mandatory Coup
     if (bot.coins >= GameRules.FORCED_COUP_COINS) {
       return { type: ActionType.GOLPE_DE_ESTADO, actorId: playerId, targetId: this.selectTarget(state, playerId) };
     }
@@ -93,7 +93,6 @@ export class BotPlayer {
         if (!claim) return false;
         return !bot.influences.some(inf => !inf.revealed && inf.character.type === claim);
       });
-      // Bots avoid bluffing Assassination or Coup as much if poor
       if (bot.coins < 3) choices = choices.filter(c => c !== ActionType.CONSPIRACAO);
       if (choices.length === 0) choices = [ActionType.ARRECADACAO_PUBLICA];
     }
@@ -113,7 +112,7 @@ export class BotPlayer {
     return { type: selectedType, actorId: playerId, targetId, targetInfluenceId };
   }
 
-  static decideChallenge(state: MatchState, playerId: string): boolean {
+  public decideChallenge(state: MatchState, playerId: string): boolean {
     const pendingAction = state.pendingAction?.action;
     if (!pendingAction) return false;
     const profile = this.getProfile(state);
@@ -127,7 +126,7 @@ export class BotPlayer {
     return Math.random() < chance;
   }
 
-  static decideBlock(state: MatchState, playerId: string): CharacterType | null {
+  public decideBlock(state: MatchState, playerId: string): CharacterType | null {
     const bot = state.players.find(p => p.id === playerId)!;
     const pendingAction = state.pendingAction?.action;
     if (!pendingAction) return null;
@@ -151,16 +150,15 @@ export class BotPlayer {
     return null;
   }
 
-  static decideChallengeBlock(state: MatchState, playerId: string): boolean {
+  public decideChallengeBlock(state: MatchState, playerId: string): boolean {
     return Math.random() < this.getProfile(state).challengeBase;
   }
 
-  private static selectTarget(state: MatchState, botId: string): string {
+  private selectTarget(state: MatchState, botId: string): string {
     const profile = this.getProfile(state);
     const targets = state.players.filter(p => p.id !== botId && p.alive);
     if (targets.length === 0) return '';
     
-    // Sort by coins descending
     targets.sort((a, b) => b.coins - a.coins);
     
     if (Math.random() < profile.richTargetRate) {
@@ -169,7 +167,9 @@ export class BotPlayer {
     return targets[Math.floor(Math.random() * targets.length)].id;
   }
 
-  private static getProfile(state: MatchState): BotProfile {
+  private getProfile(state: MatchState): BotProfile {
     return BOT_PROFILES[state.config.mode];
   }
 }
+
+export const botIA: BotIA = new BotPlayer();

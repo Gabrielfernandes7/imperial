@@ -1,13 +1,15 @@
-import { BotPlayer } from '../bot/BotPlayer';
+import { botIA } from '../bot/BotPlayer';
+import { BotOrchestrator } from './BotOrchestrator';
 import { Action } from '../models/Action';
 import { ActionResult } from '../models/ActionResult';
 import { ACTIONS, ActionType } from '../models/ActionType';
 import { ChallengeResult } from '../models/ChallengeResult';
 import { CHARACTERS, CharacterType } from '../models/Character';
-import { GameEvent, GameEventType } from '../models/GameEvent';
+import { GameEventType } from '../models/GameEvent';
 import { GamePhase } from '../models/GamePhase';
 import { MatchState } from '../models/MatchState';
 import { Player } from '../models/Player';
+import { GameLogger } from './GameLogger';
 import { ActionRules } from '../rules/ActionRules';
 import { BlockClaims } from '../rules/BlockClaims';
 import { CharacterClaims } from '../rules/CharacterClaims';
@@ -17,10 +19,18 @@ import { generateId } from '../utils/id';
 import { shuffle } from '../utils/shuffle';
 import { StateValidator } from './StateValidator';
 import { GameMode } from '../models/GameMode';
-
+import { TurnManager } from './TurnManager';
+import { ActionResolver } from './ActionResolver';
 export class GameEngine {
   private state: MatchState;
 
+  /**
+   * Inicializa uma nova engine de jogo Imperial.
+   * 
+   * @param playerNames - Lista de nomes dos jogadores.
+   * @param humanPlayerIndex - Índice do jogador humano (se houver).
+   * @param options - Configurações adicionais de IDs, bots e modo de jogo.
+   */
   constructor(
     playerNames: string[],
     humanPlayerIndex: number | null = 0,
@@ -30,6 +40,8 @@ export class GameEngine {
       mode?: GameMode;
     },
   ) {
+    // ...
+
     const players: Player[] = playerNames.map((name, index) => ({
       id: options?.playerIds?.[index] ?? generateId(),
       name,
@@ -57,6 +69,9 @@ export class GameEngine {
     };
   }
 
+  /**
+   * Inicia a partida, distribuindo moedas e influências iniciais.
+   */
   public startGame(): void {
     const deck = DeckBuilder.buildDeck();
 
@@ -89,96 +104,32 @@ export class GameEngine {
     this.validate();
   }
 
+  /**
+   * Executa um passo da engine de jogo.
+   * Lida com transições automáticas de fase, resoluções de bots e validação de estado.
+   */
   public step(): void {
-    const currentPlayer = this.getCurrentPlayer();
+    BotOrchestrator.executeBotStep(this.state, botIA, {
+      declareAction: (a) => this.declareAction(a),
+      challenge: (id) => this.challenge(id),
+      passChallenge: (id) => this.passChallenge(id),
+      declareBlock: (id, c) => this.declareBlock(id, c),
+      passBlock: (id) => this.passBlock(id),
+      challengeBlock: (id) => this.challengeBlock(id),
+      passBlockChallenge: (id) => this.passBlockChallenge(id),
+      revealInfluence: (id, infId) => this.revealInfluence(id, infId),
+      exchangeCards: (id, ids) => this.exchangeCards(id, ids),
+      getPlayerById: (id) => this.getPlayerById(id),
+      getCurrentPlayer: () => this.getCurrentPlayer(),
+      getEligibleChallengePlayers: () => this.getEligibleChallengePlayers(),
+      getEligibleBlockPlayers: () => this.getEligibleBlockPlayers(),
+      getEligibleBlockChallengePlayers: () => this.getEligibleBlockChallengePlayers(),
+    });
 
-    switch (this.state.phase) {
-      case GamePhase.TURN_START:
-        if (currentPlayer.isBot) {
-          this.declareAction(BotPlayer.decideAction(this.state, currentPlayer.id));
-        }
-        break;
-
-      case GamePhase.CHALLENGE_WINDOW: {
-        const responder = this.getEligibleChallengePlayers().find(
-          (player) => player.isBot && !this.state.challengePasses.includes(player.id),
-        );
-
-        if (responder) {
-          if (BotPlayer.decideChallenge(this.state, responder.id)) {
-            this.challenge(responder.id);
-          } else {
-            this.passChallenge(responder.id);
-          }
-        }
-        break;
-      }
-
-      case GamePhase.BLOCK_WINDOW: {
-        const responder = this.getEligibleBlockPlayers().find(
-          (player) => player.isBot && !this.state.blockPasses.includes(player.id),
-        );
-
-        if (responder) {
-          const character = BotPlayer.decideBlock(this.state, responder.id);
-          if (character) {
-            this.declareBlock(responder.id, character);
-          } else {
-            this.passBlock(responder.id);
-          }
-        }
-        break;
-      }
-
-      case GamePhase.BLOCK_CHALLENGE_WINDOW: {
-        const responder = this.getEligibleBlockChallengePlayers().find(
-          (player) => player.isBot && !this.state.blockChallengePasses.includes(player.id),
-        );
-
-        if (responder) {
-          if (BotPlayer.decideChallengeBlock(this.state, responder.id)) {
-            this.challengeBlock(responder.id);
-          } else {
-            this.passBlockChallenge(responder.id);
-          }
-        }
-        break;
-      }
-
-      case GamePhase.ACTION_DECLARED:
-        this.resolvePendingAction();
-        break;
-
-      case GamePhase.SELECTING_CARD_TO_REVEAL: {
-        const player = this.state.playerToRevealId
-          ? this.getPlayerById(this.state.playerToRevealId)
-          : undefined;
-        const influence = player?.influences.find((item) => !item.revealed);
-
-        if (player?.isBot && influence) {
-          this.revealInfluence(player.id, influence.id);
-        }
-        break;
-      }
-
-      case GamePhase.SELECTING_CARDS_TO_EXCHANGE: {
-        const player = this.getCurrentPlayer();
-        if (player.isBot) {
-          const cardsToReturn = player.influences
-            .filter((influence) => !influence.revealed)
-            .slice(0, 1)
-            .map((influence) => influence.id);
-          this.exchangeCards(player.id, cardsToReturn);
-        }
-        break;
-      }
-
-      case GamePhase.TURN_END:
-        this.endTurn();
-        break;
-
-      default:
-        break;
+    if (this.state.phase === GamePhase.ACTION_DECLARED) {
+      this.resolvePendingAction();
+    } else if (this.state.phase === GamePhase.TURN_END) {
+      this.endTurn();
     }
 
     this.validate();
@@ -460,123 +411,14 @@ export class GameEngine {
   }
 
   public resolvePendingAction(): ActionResult {
-    if (this.state.phase !== GamePhase.ACTION_DECLARED || !this.state.pendingAction) {
-      return this.failure('A ação ainda não está pronta para resolução.');
-    }
-
-    const { action } = this.state.pendingAction;
-    const actor = this.getPlayerById(action.actorId)!;
-    const target = action.targetId ? this.getPlayerById(action.targetId) : undefined;
-
-    if (!actor.alive) {
-      return this.failure('Jogador eliminado não pode resolver ação.');
-    }
-
-    if (action.type === ActionType.CONSPIRACAO || action.type === ActionType.GOLPE_DE_ESTADO) {
-      this.state.phase = GamePhase.ACTION_RESOLUTION;
-      this.logEvent(GameEventType.ACTION_RESOLVED, {
-        description: `${actor.name} executou ${ACTIONS[action.type].name} contra ${target!.name}.`,
-        type: action.type,
-        actorId: actor.id,
-        targetId: target!.id,
-      });
-      this.requestInfluenceLoss(target!.id, GamePhase.TURN_END);
-      return { success: true, message: 'Ação resolvida.', stateChanged: true };
-    }
-
-    this.state.phase = GamePhase.ACTION_RESOLUTION;
-    let description = `${actor.name} executou ${ACTIONS[action.type].name}.`;
-
-    switch (action.type) {
-      case ActionType.COLETAR_IMPOSTOS_LOCAIS:
-        actor.coins += 1;
-        break;
-      case ActionType.ARRECADACAO_PUBLICA:
-        actor.coins += GameRules.FOREIGN_AID_AMOUNT;
-        break;
-      case ActionType.RECEBER_IMPOSTO:
-        actor.coins += GameRules.TAX_AMOUNT;
-        break;
-      case ActionType.NEGOCIACAO: {
-        if (!action.targetId) {
-          // Trocar 1 Carta
-          const cardsDrawn = [this.state.deck.pop()].filter(
-            Boolean
-          ) as NonNullable<ReturnType<Array<typeof this.state.deck[number]>['pop']>>[];
-          cardsDrawn.forEach((character) => {
-            actor.influences.push({ id: generateId(), character, revealed: false });
-          });
-          this.state.phase = GamePhase.SELECTING_CARDS_TO_EXCHANGE;
-          this.logEvent(GameEventType.ACTION_RESOLVED, {
-            description: `${actor.name} está escolhendo 1 carta para trocar.`,
-            type: action.type,
-            actorId: actor.id,
-          });
-          return { success: true, message: 'Escolha a carta.', stateChanged: true };
-        } else {
-          // Ver uma carta do adversário
-          const targetPlayer = this.getPlayerById(action.targetId);
-          if (!targetPlayer) return this.failure('Alvo inválido.');
-
-          const hiddenInfluence = targetPlayer.influences.find(
-            (inf) => inf.id === action.targetInfluenceId && !inf.revealed,
-          );
-          if (!hiddenInfluence) {
-            return this.failure('A carta escolhida não está mais disponível.');
-          }
-
-          const peekedInfluence = {
-            ...hiddenInfluence,
-            character: { ...hiddenInfluence.character },
-          };
-          this.state.privatePeekedInfluence = {
-            viewerId: actor.id,
-            targetPlayerId: targetPlayer.id,
-            influence: peekedInfluence,
-          };
-
-          description = `${actor.name} espiou uma carta oculta de ${targetPlayer.name}.`;
-          this.logEvent(GameEventType.ACTION_RESOLVED, {
-            description,
-            type: action.type,
-            actorId: actor.id,
-            targetId: targetPlayer.id,
-          });
-
-          this.state.pendingAction = undefined;
-          this.state.phase = GamePhase.TURN_END;
-          this.checkWinner();
-
-          return { 
-            success: true, 
-            message: `${actor.name} espiou uma carta de ${targetPlayer.name}.`,
-            stateChanged: true,
-            peekedInfluence,
-          };
-        }
-      }
-      case ActionType.CONTRABANDO: {
-        const amount = Math.min(target!.coins, GameRules.STEAL_AMOUNT);
-        target!.coins -= amount;
-        actor.coins += amount;
-        description = `${actor.name} roubou ${amount} moedas de ${target!.name}.`;
-        break;
-      }
-      default:
-        break;
-    }
-
-    this.logEvent(GameEventType.ACTION_RESOLVED, {
-      description,
-      type: action.type,
-      actorId: actor.id,
-      targetId: target?.id,
-    });
-    this.state.pendingAction = undefined;
-    this.state.phase = GamePhase.TURN_END;
-    this.checkWinner();
-    return { success: true, message: 'Ação resolvida.', stateChanged: true };
+    return ActionResolver.resolve(
+      this.state,
+      (id) => this.getPlayerById(id),
+      (playerId, nextPhase) => this.requestInfluenceLoss(playerId, nextPhase),
+      () => this.checkWinner()
+    );
   }
+
 
   public exchangeCards(playerId: string, influenceIdsToReturn: string[]): ActionResult {
     const player = this.getPlayerById(playerId);
@@ -672,35 +514,14 @@ export class GameEngine {
   }
 
   public endTurn(): ActionResult {
-    if (this.state.phase !== GamePhase.TURN_END) {
-      return this.failure('O turno ainda não pode ser encerrado.');
+    try {
+      TurnManager.endTurn(this.state);
+      return { success: true, message: 'Próximo turno.', stateChanged: true };
+    } catch (error) {
+      return this.failure(error instanceof Error ? error.message : 'Erro ao encerrar turno.');
     }
-
-    this.checkWinner();
-    if (this.state.winnerId) {
-      return { success: true, message: 'Partida encerrada.', stateChanged: true };
-    }
-
-    let nextIndex = (this.state.currentPlayerIndex + 1) % this.state.players.length;
-    while (!this.state.players[nextIndex].alive) {
-      nextIndex = (nextIndex + 1) % this.state.players.length;
-    }
-
-    this.state.currentPlayerIndex = nextIndex;
-    this.state.turnNumber++;
-    this.state.phase = GamePhase.TURN_START;
-    this.state.pendingAction = undefined;
-    this.state.pendingBlock = undefined;
-    this.state.privatePeekedInfluence = undefined;
-    this.resetResponsePasses();
-    const nextPlayer = this.state.players[nextIndex];
-    this.logEvent(GameEventType.TURN_STARTED, {
-      description: `Início do turno ${this.state.turnNumber}: vez de ${nextPlayer.name}.`,
-      playerIndex: nextIndex,
-      playerId: nextPlayer.id,
-    });
-    return { success: true, message: 'Próximo turno.', stateChanged: true };
   }
+
 
   private moveAfterActionChallenge(): void {
     const actionType = this.state.pendingAction!.action.type;
@@ -790,19 +611,7 @@ export class GameEngine {
   }
 
   private checkWinner(): void {
-    const alivePlayers = this.state.players.filter((player) => player.alive);
-    if (alivePlayers.length !== 1 || this.state.phase === GamePhase.GAME_OVER) {
-      return;
-    }
-
-    const [winner] = alivePlayers;
-    this.state.winnerId = winner.id;
-    this.state.phase = GamePhase.GAME_OVER;
-    this.logEvent(GameEventType.GAME_FINISHED, {
-      description: `FIM DE JOGO! ${winner.name} é o novo Imperador!`,
-      winnerId: winner.id,
-      winnerName: winner.name,
-    });
+    // Moved to TurnManager
   }
 
   private allPlayersPassed(eligibleIds: string[], passedIds: string[]): boolean {
@@ -816,15 +625,7 @@ export class GameEngine {
   }
 
   private logEvent(type: GameEventType, payload: Record<string, unknown>): void {
-    const event: GameEvent = {
-      id: generateId(),
-      turn: this.state.turnNumber,
-      timestamp: Date.now(),
-      type,
-      payload,
-      description: typeof payload.description === 'string' ? payload.description : '',
-    };
-    this.state.events.push(event);
+    GameLogger.logEvent(this.state, type, payload);
   }
 
   private getPlayerById(id: string): Player | undefined {

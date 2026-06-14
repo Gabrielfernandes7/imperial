@@ -1,0 +1,23 @@
+export enum GameEventType {
+  GAME_STARTED = 'GAME_STARTED',
+  TURN_STARTED = 'TURN_STARTED',
+  ACTION_DECLARED = 'ACTION_DECLARED',
+  ACTION_CHALLENGED = 'ACTION_CHALLENGED',
+  ACTION_ACCEPTED = 'ACTION_ACCEPTED',
+  ACTION_BLOCKED = 'ACTION_BLOCKED',
+  BLOCK_ACCEPTED = 'BLOCK_ACCEPTED',
+  BLOCK_CHALLENGED = 'BLOCK_CHALLENGED',
+  ACTION_RESOLVED = 'ACTION_RESOLVED',
+  INFLUENCE_LOST = 'INFLUENCE_LOST',
+  PLAYER_ELIMINATED = 'PLAYER_ELIMINATED',
+  GAME_FINISHED = 'GAME_FINISHED',
+}
+
+export interface GameEvent {
+  id: string;
+  turn: number;
+  timestamp: number;
+  type: GameEventType;
+  payload: Record<string, any>;
+  description: string;
+}

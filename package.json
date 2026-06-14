@@ -1,0 +1,44 @@
+{
+  "name": "imperial",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "test:game": "tsx src/game/tests/validate_sprint1.ts && tsx src/game/tests/validate_sprint2.ts && tsx src/game/tests/validate_sprint3a.ts && tsx src/game/tests/validate_sprint3b.ts && tsx src/game/tests/validate_coup_rules.ts",
+    "test:network": "tsx src/network/tests/validate_network.ts",
+    "test": "npm run typecheck && npm run test:game && npm run test:network"
+  },
+  "dependencies": {
+    "@react-navigation/native": "^7.3.1",
+    "@react-navigation/native-stack": "^7.17.3",
+    "expo": "~54.0.34",
+    "expo-crypto": "~15.0.9",
+    "expo-dev-client": "~6.0.21",
+    "expo-network": "~8.0.8",
+    "expo-status-bar": "~3.0.9",
+    "lucide-react-native": "^1.18.0",
+    "nativewind": "^2.0.11",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-svg": "15.12.1",
+    "react-native-tcp-socket": "^6.4.1",
+    "react-native-web": "^0.21.0",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "babel-preset-expo": "~54.0.10",
+    "postcss": "8.4.23",
+    "tailwindcss": "3.3.2",
+    "tsx": "^4.22.4",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}

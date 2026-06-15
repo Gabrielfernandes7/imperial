@@ -7,6 +7,8 @@ import { CHARACTERS } from '../../game/models/Character';
 import { ACTIONS } from '../../game/models/ActionType';
 import { ChevronLeft } from 'lucide-react-native';
 import { CARD_IMAGES } from '../components/InfluenceCard';
+import { useThemeStore } from '../../store/themeStore';
+import { NightSky } from '../components/NightSky';
 
 type AboutScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'About'>;
@@ -36,51 +38,61 @@ const CHARACTER_ART_CONCEPTS: Record<string, { concept: string; inspiration: str
 };
 
 export const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
-      <View className="flex-row items-center p-4 border-b border-imperial-gold/20 bg-white">
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-night-deep' : 'bg-background'}`} edges={['top', 'left', 'right']}>
+      {isDark && <NightSky />}
+      <View className={`flex-row items-center border-b p-4 ${
+        isDark ? 'border-white/10 bg-night-mid/80' : 'border-imperial-gold/20 bg-white'
+      }`}>
         <TouchableOpacity onPress={() => navigation.goBack()} className="mr-4">
-          <ChevronLeft color="#5E412F" size={32} />
+          <ChevronLeft color={isDark ? '#FFFFFF' : '#5E412F'} size={32} />
         </TouchableOpacity>
-        <Text className="text-2xl font-bold text-imperial-brown">Sobre o Jogo</Text>
+        <Text className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-imperial-brown'}`}>Sobre o Jogo</Text>
       </View>
 
       <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
         <View className="mb-8">
-          <Text className="text-4xl font-black text-imperial-brown mb-2">Imperial</Text>
-          <Text className="text-base text-text leading-6 mb-4">
+          <Text className={`mb-2 text-4xl font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>Imperial</Text>
+          <Text className={`mb-4 text-base leading-6 ${isDark ? 'text-stone-300' : 'text-text'}`}>
             Um jogo de intriga política ambientado no Brasil Imperial, com personagens retratados em pintura digital inspirada no expressionismo nordestino de Descartes Gadelha, na pintura acadêmica brasileira do século XIX e em elementos decorativos da heráldica imperial brasileira.
           </Text>
-          <Text className="text-sm text-text/80 leading-5">
+          <Text className={`text-sm leading-5 ${isDark ? 'text-stone-400' : 'text-text/80'}`}>
             Participe de uma rede de conspiração e blefe nos bastidores da corte oitocentista. Use sua influência política, desmascare os adversários e acumule moedas para desferir o golpe de estado definitivo e consolidar seu poder na corte.
           </Text>
         </View>
 
-        <View className="mb-8 bg-amber-50/50 p-5 rounded-2xl border border-imperial-gold/20">
-          <Text className="text-lg font-bold text-imperial-brown mb-3">Diretrizes da Direção de Arte</Text>
+        <View className={`mb-8 rounded-2xl border p-5 ${
+          isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/20 bg-amber-50/50'
+        }`}>
+          <Text className={`mb-3 text-lg font-bold ${isDark ? 'text-white' : 'text-imperial-brown'}`}>Diretrizes da Direção de Arte</Text>
           <View className="space-y-3">
             <View>
               <Text className="text-xs font-bold text-imperial-green uppercase">1. Pintura Acadêmica e Fotografia</Text>
-              <Text className="text-xs text-text/90 mt-0.5">Influência na iluminação dramática, posturas formais e vestimentas detalhadas baseadas nas imagens de Marc Ferrez, Revert Klumb e no acervo do Museu Imperial de Petrópolis.</Text>
+              <Text className={`mt-0.5 text-xs ${isDark ? 'text-stone-300' : 'text-text/90'}`}>Influência na iluminação dramática, posturas formais e vestimentas detalhadas baseadas nas imagens de Marc Ferrez, Revert Klumb e no acervo do Museu Imperial de Petrópolis.</Text>
             </View>
             <View className="mt-3">
               <Text className="text-xs font-bold text-imperial-green uppercase">2. Expressionismo de Descartes Gadelha</Text>
-              <Text className="text-xs text-text/90 mt-0.5">Inspiração nos tons terrosos, expressões faciais profundas e humanização dos personagens, refletindo a dramaticidade histórica brasileira.</Text>
+              <Text className={`mt-0.5 text-xs ${isDark ? 'text-stone-300' : 'text-text/90'}`}>Inspiração nos tons terrosos, expressões faciais profundas e humanização dos personagens, refletindo a dramaticidade histórica brasileira.</Text>
             </View>
             <View className="mt-3">
               <Text className="text-xs font-bold text-imperial-green uppercase">3. Cordel & Xilogravura</Text>
-              <Text className="text-xs text-text/90 mt-0.5">Uso de linhas fortes e ornamentos geométricos decorativos em ícones e molduras de interface, inspirados em mestres como J. Borges e Mestre Noza.</Text>
+              <Text className={`mt-0.5 text-xs ${isDark ? 'text-stone-300' : 'text-text/90'}`}>Uso de linhas fortes e ornamentos geométricos decorativos em ícones e molduras de interface, inspirados em mestres como J. Borges e Mestre Noza.</Text>
             </View>
           </View>
         </View>
 
         <View className="mb-8">
-          <Text className="text-2xl font-bold text-imperial-brown mb-4">Personagens e Arte</Text>
+          <Text className={`mb-4 text-2xl font-bold ${isDark ? 'text-white' : 'text-imperial-brown'}`}>Personagens e Arte</Text>
           {Object.values(CHARACTERS).map((char) => {
             const artInfo = CHARACTER_ART_CONCEPTS[char.type];
             const cardImage = CARD_IMAGES[char.type];
             return (
-              <View key={char.type} className="bg-white p-4 rounded-2xl mb-4 border border-imperial-gold/20 shadow-sm flex-row">
+              <View key={char.type} className={`mb-4 flex-row rounded-2xl border p-4 shadow-sm ${
+                isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/20 bg-white'
+              }`}>
                 {cardImage && (
                   <Image 
                     source={cardImage} 
@@ -90,18 +102,20 @@ export const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
                 )}
                 <View className="flex-1">
                   <View className="flex-row justify-between items-center mb-1 flex-wrap">
-                    <Text className="text-lg font-black text-imperial-brown mr-1">{char.name}</Text>
-                    <Text className="text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded uppercase">{char.type}</Text>
+                    <Text className={`mr-1 text-lg font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>{char.name}</Text>
+                    <Text className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${
+                      isDark ? 'bg-imperial-gold/15 text-imperial-gold' : 'bg-amber-100 text-amber-800'
+                    }`}>{char.type}</Text>
                   </View>
                   <Text className="text-xs text-imperial-green font-bold mb-2">{char.description}</Text>
                   {artInfo && (
-                    <View className="pt-2 border-t border-stone-100">
-                      <Text className="text-[10px] text-stone-600 leading-normal mb-1">
-                        <Text className="font-bold text-stone-800">Visual: </Text>
+                    <View className={`border-t pt-2 ${isDark ? 'border-white/10' : 'border-stone-100'}`}>
+                      <Text className={`mb-1 text-[10px] leading-normal ${isDark ? 'text-stone-300' : 'text-stone-600'}`}>
+                        <Text className={`font-bold ${isDark ? 'text-white' : 'text-stone-800'}`}>Visual: </Text>
                         {artInfo.concept}
                       </Text>
-                      <Text className="text-[10px] text-stone-500 leading-normal">
-                        <Text className="font-bold text-stone-700">Inspiração: </Text>
+                      <Text className={`text-[10px] leading-normal ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
+                        <Text className={`font-bold ${isDark ? 'text-stone-200' : 'text-stone-700'}`}>Inspiração: </Text>
                         {artInfo.inspiration}
                       </Text>
                     </View>
@@ -113,16 +127,20 @@ export const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
         </View>
 
         <View className="mb-8">
-          <Text className="text-2xl font-bold text-imperial-brown mb-4">Ações do Jogo</Text>
+          <Text className={`mb-4 text-2xl font-bold ${isDark ? 'text-white' : 'text-imperial-brown'}`}>Ações do Jogo</Text>
           {Object.values(ACTIONS).map((action) => (
-            <View key={action.type} className="bg-white p-4 rounded-xl mb-4 border-l-4 border-imperial-green shadow-sm">
+            <View key={action.type} className={`mb-4 rounded-xl border-l-4 p-4 shadow-sm ${
+              isDark ? 'border-imperial-gold bg-white/5' : 'border-imperial-green bg-white'
+            }`}>
               <View className="flex-row justify-between items-center mb-1">
                 <Text className="text-xl font-bold text-imperial-green">{action.name}</Text>
                 {action.cost > 0 && (
-                  <Text className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">Custo: {action.cost}</Text>
+                  <Text className={`rounded px-2 py-1 text-xs font-bold ${
+                    isDark ? 'bg-imperial-gold/15 text-imperial-gold' : 'bg-amber-100 text-amber-800'
+                  }`}>Custo: {action.cost}</Text>
                 )}
               </View>
-              <Text className="text-sm text-text mb-2 italic">
+              <Text className={`mb-2 text-sm italic ${isDark ? 'text-stone-300' : 'text-text'}`}>
                 {getActionDescription(action.type)}
               </Text>
               <View className="flex-row gap-2 mt-1">
@@ -138,7 +156,7 @@ export const AboutScreen: React.FC<AboutScreenProps> = ({ navigation }) => {
         </View>
 
         <View className="mb-12">
-          <Text className="text-sm text-imperial-brown/60 italic text-center leading-normal">
+          <Text className={`text-center text-sm italic leading-normal ${isDark ? 'text-stone-500' : 'text-imperial-brown/60'}`}>
             Imperial — Projeto de Identidade e Cultura Brasileira.{"\n"}
             Desenvolvido para fins educacionais e de preservação de referências nacionais.
           </Text>

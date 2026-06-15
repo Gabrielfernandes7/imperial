@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNetworkSession } from '../../network/NetworkSessionStore';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { CourtPromptModal } from '../components/CourtPromptModal';
+import { useThemeStore } from '../../store/themeStore';
+import { NightSky } from '../components/NightSky';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'CreateMatch'>;
@@ -14,6 +16,8 @@ type Props = {
 };
 
 export function CreateMatchScreen({ navigation, route }: Props) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
   const [tableName, setTableName] = useState(`Mesa de ${route.params.playerName}`);
   const [creating, setCreating] = useState(false);
   const [promptState, setPromptState] = useState<{
@@ -47,38 +51,45 @@ export function CreateMatchScreen({ navigation, route }: Props) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-imperial-cream px-6 pb-8">
+    <SafeAreaView className={`flex-1 px-6 pb-8 ${isDark ? 'bg-night-deep' : 'bg-imperial-cream'}`}>
+      {isDark && <NightSky />}
       <TouchableOpacity
-        className="mt-2 h-12 w-12 items-center justify-center rounded-2xl border border-imperial-brown/15 bg-white"
+        className={`mt-2 h-12 w-12 items-center justify-center rounded-2xl border ${
+          isDark ? 'border-white/10 bg-white/5' : 'border-imperial-brown/15 bg-white'
+        }`}
         onPress={() => navigation.goBack()}
       >
-        <ChevronLeft color="#5E412F" size={26} />
+        <ChevronLeft color={isDark ? '#FFFFFF' : '#5E412F'} size={26} />
       </TouchableOpacity>
       <View className="mt-10">
-        <Text className="text-xs font-bold uppercase tracking-[3px] text-imperial-green">
+        <Text className={`text-xs font-bold uppercase tracking-[3px] ${isDark ? 'text-imperial-gold' : 'text-imperial-green'}`}>
           Nova mesa
         </Text>
-        <Text className="mt-2 text-4xl font-black text-imperial-brown">Criar partida</Text>
+        <Text className={`mt-2 text-4xl font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>Criar partida</Text>
       </View>
-      <Text className="mb-2 mt-10 text-xs font-bold uppercase tracking-widest text-stone-500">
+      <Text className={`mb-2 mt-10 text-xs font-bold uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>
         Nome da mesa
       </Text>
       <TextInput
         value={tableName}
         onChangeText={setTableName}
         maxLength={32}
-        className="rounded-2xl border border-imperial-gold/25 bg-white px-5 py-4 text-lg font-bold text-imperial-brown"
+        className={`rounded-2xl border px-5 py-4 text-lg font-bold ${
+          isDark ? 'border-white/10 bg-white/5 text-white' : 'border-imperial-gold/25 bg-white text-imperial-brown'
+        }`}
       />
       <View className="flex-1" />
       <TouchableOpacity
         disabled={creating || !tableName.trim()}
         onPress={create}
-        className="items-center rounded-2xl bg-imperial-green py-5"
+        className={`items-center rounded-2xl py-5 ${
+          isDark ? 'bg-imperial-gold' : 'bg-imperial-green'
+        }`}
       >
         {creating ? (
-          <ActivityIndicator color="#F5F0E6" />
+          <ActivityIndicator color={isDark ? '#0B1026' : '#F5F0E6'} />
         ) : (
-          <Text className="text-lg font-bold text-imperial-cream">Abrir mesa na rede</Text>
+          <Text className={`text-lg font-bold ${isDark ? 'text-night-deep' : 'text-imperial-cream'}`}>Abrir mesa na rede</Text>
         )}
       </TouchableOpacity>
 

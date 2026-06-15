@@ -11,6 +11,7 @@ import { FindMatchScreen } from '../screens/FindMatchScreen';
 import { LobbyScreen } from '../screens/LobbyScreen';
 import { LanGameScreen } from '../screens/LanGameScreen';
 import { GameMode } from '../../game/models/GameMode';
+import { useThemeStore } from '../../store/themeStore';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -33,11 +34,14 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNavigator = () => {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#FAF8F3' },
+        contentStyle: { backgroundColor: isDark ? '#0B1026' : '#FAF8F3' },
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} />

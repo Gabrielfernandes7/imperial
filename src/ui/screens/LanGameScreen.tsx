@@ -4,7 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Crown, Eye, ShieldAlert, Swords } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ACTIONS, ActionType } from '../../game/models/ActionType';
-import { CHARACTERS, CharacterType } from '../../game/models/Character';
+import { CHARACTERS } from '../../game/models/Character';
 import { GamePhase } from '../../game/models/GamePhase';
 import { BlockClaims } from '../../game/rules/BlockClaims';
 import { useNetworkSession } from '../../network/NetworkSessionStore';
@@ -15,6 +15,8 @@ import { CourtPromptModal } from '../components/CourtPromptModal';
 import { GameEventList } from '../components/GameEventList';
 import { InfluenceCard } from '../components/InfluenceCard';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { useThemeStore } from '../../store/themeStore';
+import { NightSky } from '../components/NightSky';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'LanGame'>;
@@ -31,6 +33,8 @@ const ACTION_DETAILS: Record<ActionType, string> = {
 };
 
 export function LanGameScreen({ navigation }: Props) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
   const snapshot = useNetworkSession((state) => state.snapshot);
   const error = useNetworkSession((state) => state.error);
   const clearError = useNetworkSession((state) => state.clearError);
@@ -129,7 +133,7 @@ export function LanGameScreen({ navigation }: Props) {
       setPromptState({
         title: 'Poder do Diplomata',
         subtitle: 'Escolha como quer usar a negociação.',
-        icon: <Eye color="#1E5631" size={20} />,
+        icon: <Eye color={isDark ? '#C9A227' : '#1E5631'} size={20} />,
         buttons: [
           {
             label: 'Trocar 1 carta',
@@ -171,7 +175,7 @@ export function LanGameScreen({ navigation }: Props) {
     setPromptState({
       title: 'Escolha o alvo',
       subtitle: ACTIONS[type].name,
-      icon: <Swords color="#A56E12" size={20} />,
+      icon: <Swords color={isDark ? '#C9A227' : '#A56E12'} size={20} />,
       buttons: targets.map((target) => ({
         label: target.name,
         onPress: () => {
@@ -232,7 +236,7 @@ export function LanGameScreen({ navigation }: Props) {
     setPromptState({
       title: 'Sair da partida?',
       subtitle: 'A partida continuará pausada para os demais jogadores.',
-      icon: <Crown color="#A56E12" size={20} />,
+      icon: <Crown color={isDark ? '#C9A227' : '#A56E12'} size={20} />,
       buttons: [
         { label: 'Cancelar', variant: 'secondary', onPress: () => setPromptState(null) },
         {
@@ -249,29 +253,34 @@ export function LanGameScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-imperial-cream">
-      <View className="flex-row items-center justify-between border-b border-imperial-gold/20 bg-white px-4 py-3">
-        <TouchableOpacity onPress={exit} className="rounded-xl bg-stone-100 px-3 py-2">
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-night-deep' : 'bg-imperial-cream'}`}>
+      {isDark && <NightSky />}
+      <View className={`flex-row items-center justify-between border-b px-4 py-3 ${
+        isDark ? 'border-white/10 bg-night-mid/80' : 'border-imperial-gold/20 bg-white'
+      }`}>
+        <TouchableOpacity onPress={exit} className={`rounded-xl px-3 py-2 ${isDark ? 'border border-white/10 bg-white/5' : 'bg-stone-100'}`}>
           <Text className="font-bold text-red-800">Sair</Text>
         </TouchableOpacity>
         <View className="items-center">
-          <Text className="text-[10px] font-bold uppercase tracking-[2px] text-stone-400">
+          <Text className={`text-[10px] font-bold uppercase tracking-[2px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
             Turno {snapshot.turnNumber}
           </Text>
-          <Text className="mt-1 font-bold text-imperial-green">
+          <Text className={`mt-1 font-bold ${isDark ? 'text-imperial-gold' : 'text-imperial-green'}`}>
             {phaseLabel(snapshot)}
           </Text>
         </View>
-        <View className="min-w-12 items-center rounded-xl bg-amber-50 px-3 py-2">
-          <Text className="font-black text-amber-900">{self.coins}</Text>
+        <View className={`min-w-12 items-center rounded-xl px-3 py-2 ${
+          isDark ? 'border border-imperial-gold/30 bg-imperial-gold/10' : 'bg-amber-50'
+        }`}>
+          <Text className={`font-black ${isDark ? 'text-imperial-gold' : 'text-amber-900'}`}>{self.coins}</Text>
         </View>
       </View>
 
       <ScrollView className="flex-1 px-4">
-        <View className="my-4 rounded-2xl border border-imperial-gold/25 bg-white p-4">
+        <View className={`my-4 rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-night-mid/80' : 'border-imperial-gold/25 bg-white'}`}>
           <View className="flex-row items-center justify-between">
-            <Text className="text-lg font-black text-imperial-brown">{self.name}</Text>
-            <Text className="text-xs font-bold text-stone-500">
+            <Text className={`text-lg font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>{self.name}</Text>
+            <Text className={`text-xs font-bold ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
               {self.alive ? 'Na disputa' : 'Eliminado'}
             </Text>
           </View>
@@ -298,7 +307,9 @@ export function LanGameScreen({ navigation }: Props) {
                   }
                 }}
                 className={`mr-2 flex-1 rounded-xl ${
-                  exchangeIds.includes(influence.id) ? 'border-2 border-imperial-green' : ''
+                  exchangeIds.includes(influence.id)
+                    ? isDark ? 'border-2 border-imperial-gold' : 'border-2 border-imperial-green'
+                    : ''
                 }`}
               >
                 <InfluenceCard
@@ -316,7 +327,7 @@ export function LanGameScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <Text className="mb-3 text-xs font-bold uppercase tracking-widest text-stone-400">
+        <Text className={`mb-3 text-xs font-bold uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
           Corte
         </Text>
         {snapshot.players
@@ -324,16 +335,16 @@ export function LanGameScreen({ navigation }: Props) {
           .map((player) => (
             <View
               key={player.id}
-              className={`mb-3 flex-row items-center rounded-2xl border bg-white p-4 ${
+              className={`mb-3 flex-row items-center rounded-2xl border p-4 ${
                 player.id === current.id
-                  ? 'border-imperial-green'
-                  : 'border-imperial-gold/20'
+                  ? isDark ? 'border-imperial-gold bg-imperial-gold/10' : 'border-imperial-green bg-white'
+                  : isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/20 bg-white'
               }`}
             >
-              <Crown color={player.alive ? '#A56E12' : '#A8A29E'} size={24} />
+              <Crown color={player.alive ? (isDark ? '#C9A227' : '#A56E12') : '#A8A29E'} size={24} />
               <View className="ml-3 flex-1">
-                <Text className="font-black text-imperial-brown">{player.name}</Text>
-                <Text className="mt-1 text-xs text-stone-500">
+                <Text className={`font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>{player.name}</Text>
+                <Text className={`mt-1 text-xs ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                   {player.coins} moedas · {player.influenceCount} influências
                 </Text>
                 <View className="mt-3 flex-row">
@@ -353,7 +364,7 @@ export function LanGameScreen({ navigation }: Props) {
                   ))}
                 </View>
               </View>
-              <Text className="text-xs font-bold text-stone-400">
+              <Text className={`text-xs font-bold ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
                 {player.alive ? 'Vivo' : 'Eliminado'}
               </Text>
             </View>
@@ -363,7 +374,7 @@ export function LanGameScreen({ navigation }: Props) {
         <View className="h-6" />
       </ScrollView>
 
-      <View className="border-t border-imperial-gold/20 bg-white px-4 pb-5 pt-4">
+      <View className={`border-t px-4 pb-5 pt-4 ${isDark ? 'border-white/10 bg-night-mid' : 'border-imperial-gold/20 bg-white'}`}>
         {isRevealing ? (
           <Notice
             title="Escolha uma influência"
@@ -381,10 +392,16 @@ export function LanGameScreen({ navigation }: Props) {
                 sendCommand({ type: 'EXCHANGE_CARDS', influenceIds: exchangeIds })
               }
               className={`mt-3 items-center rounded-2xl py-4 ${
-                exchangeIds.length === 1 ? 'bg-imperial-green' : 'bg-stone-200'
+                exchangeIds.length === 1
+                  ? isDark ? 'bg-imperial-gold' : 'bg-imperial-green'
+                  : isDark ? 'bg-white/10' : 'bg-stone-200'
               }`}
             >
-              <Text className="font-bold text-white">Confirmar troca</Text>
+              <Text className={`font-bold ${
+                exchangeIds.length === 1
+                  ? isDark ? 'text-night-deep' : 'text-white'
+                  : isDark ? 'text-stone-500' : 'text-white'
+              }`}>Confirmar troca</Text>
             </TouchableOpacity>
           </View>
         ) : response.canChallengeAction ? (
@@ -419,9 +436,9 @@ export function LanGameScreen({ navigation }: Props) {
             />
             <TouchableOpacity
               onPress={() => setIsSelectingSpyTarget(false)}
-              className="mt-3 items-center rounded-2xl bg-stone-200 py-4"
+              className={`mt-3 items-center rounded-2xl py-4 ${isDark ? 'bg-white/10' : 'bg-stone-200'}`}
             >
-              <Text className="font-bold text-stone-600">Cancelar espionagem</Text>
+              <Text className={`font-bold ${isDark ? 'text-white' : 'text-stone-600'}`}>Cancelar espionagem</Text>
             </TouchableOpacity>
           </View>
         ) : isSelfTurn && snapshot.phase === GamePhase.TURN_START ? (
@@ -453,15 +470,15 @@ export function LanGameScreen({ navigation }: Props) {
         ) : isSelfTurn && snapshot.phase === GamePhase.ACTION_DECLARED ? (
           <TouchableOpacity
             onPress={() => sendCommand({ type: 'RESOLVE_ACTION' })}
-            className="flex-row items-center justify-center rounded-2xl bg-imperial-green py-4"
+            className={`flex-row items-center justify-center rounded-2xl py-4 ${isDark ? 'bg-imperial-gold' : 'bg-imperial-green'}`}
           >
-            <Swords color="#F5F0E6" size={20} />
-            <Text className="ml-2 font-bold text-white">Executar ação</Text>
+            <Swords color={isDark ? '#0B1026' : '#F5F0E6'} size={20} />
+            <Text className={`ml-2 font-bold ${isDark ? 'text-night-deep' : 'text-white'}`}>Executar ação</Text>
           </TouchableOpacity>
         ) : isSelfTurn && snapshot.phase === GamePhase.TURN_END ? (
           <TouchableOpacity
             onPress={() => sendCommand({ type: 'END_TURN' })}
-            className="items-center rounded-2xl bg-imperial-brown py-4"
+            className={`items-center rounded-2xl py-4 ${isDark ? 'border border-white/20 bg-white/10' : 'bg-imperial-brown'}`}
           >
             <Text className="font-bold text-white">Encerrar turno</Text>
           </TouchableOpacity>
@@ -485,18 +502,18 @@ export function LanGameScreen({ navigation }: Props) {
             ? `${peekedTargetName} teve esta carta escolhida.`
             : 'Visualização privada da corte.'
         }
-        icon={<Eye color="#1E5631" size={20} />}
+        icon={<Eye color={isDark ? '#C9A227' : '#1E5631'} size={20} />}
         onClose={() => setPeekModalVisible(false)}
       >
         {snapshot.privatePeekedInfluence && (
           <View className="mt-1 items-center">
-            <View className="w-52 rounded-[28px] border border-imperial-gold/25 bg-white p-3 shadow-sm">
+            <View className={`w-52 rounded-[28px] border p-3 shadow-sm ${isDark ? 'border-white/10 bg-night-mid' : 'border-imperial-gold/25 bg-white'}`}>
               <InfluenceCard
                 influence={snapshot.privatePeekedInfluence.influence}
                 isOwner
               />
             </View>
-            <Text className="mt-4 text-center text-xs uppercase tracking-[3px] text-stone-400">
+            <Text className={`mt-4 text-center text-xs uppercase tracking-[3px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
               Informação reservada
             </Text>
           </View>
@@ -585,9 +602,12 @@ function ResponseActions({
   onPrimary: () => void;
   onSecondary: () => void;
 }) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+
   return (
     <View>
-      <Text className="text-lg font-black text-imperial-brown">{title}</Text>
+      <Text className={`text-lg font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>{title}</Text>
       <View className="mt-4 flex-row">
         <TouchableOpacity
           onPress={onPrimary}
@@ -599,7 +619,7 @@ function ResponseActions({
           onPress={onSecondary}
           className="ml-2 flex-1 items-center rounded-2xl bg-imperial-gold py-4"
         >
-          <Text className="font-bold text-imperial-brown">{secondary}</Text>
+          <Text className={`font-bold ${isDark ? 'text-night-deep' : 'text-imperial-brown'}`}>{secondary}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -607,18 +627,21 @@ function ResponseActions({
 }
 
 function Notice({ title, description }: { title: string; description: string }) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+
   return (
-    <View className="flex-row items-center rounded-2xl border border-imperial-gold/25 bg-amber-50 p-4">
-      <View className="mr-3 h-10 w-10 items-center justify-center rounded-xl bg-white">
+    <View className={`flex-row items-center rounded-2xl border p-4 ${isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/25 bg-amber-50'}`}>
+      <View className={`mr-3 h-10 w-10 items-center justify-center rounded-xl ${isDark ? 'bg-white/10' : 'bg-white'}`}>
         {title.includes('influência') ? (
-          <Eye color="#A56E12" size={20} />
+          <Eye color={isDark ? '#C9A227' : '#A56E12'} size={20} />
         ) : (
-          <ShieldAlert color="#A56E12" size={20} />
+          <ShieldAlert color={isDark ? '#C9A227' : '#A56E12'} size={20} />
         )}
       </View>
       <View className="flex-1">
-        <Text className="font-bold text-imperial-brown">{title}</Text>
-        <Text className="mt-1 text-xs text-stone-500">{description}</Text>
+        <Text className={`font-bold ${isDark ? 'text-white' : 'text-imperial-brown'}`}>{title}</Text>
+        <Text className={`mt-1 text-xs ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>{description}</Text>
       </View>
     </View>
   );

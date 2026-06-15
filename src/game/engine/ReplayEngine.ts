@@ -1,8 +1,6 @@
 import { GameEvent, GameEventType } from '../models/GameEvent';
 import { MatchState } from '../models/MatchState';
 import { GamePhase } from '../models/GamePhase';
-import { Player } from '../models/Player';
-import { Character, CharacterType } from '../models/Character';
 import { GameMode } from '../models/GameMode';
 import { generateId } from '../utils/id';
 

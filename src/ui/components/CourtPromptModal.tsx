@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { CourtModal } from './CourtModal';
+import { useThemeStore } from '../../store/themeStore';
 
 type PromptButton = {
   label: string;
@@ -25,22 +26,25 @@ export function CourtPromptModal({
   icon,
   buttons,
 }: CourtPromptModalProps) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+
   return (
     <CourtModal visible={visible} title={title} subtitle={subtitle} onClose={onClose} icon={icon}>
       <View className="gap-2">
         {buttons.map((button) => {
           const variant =
             button.variant === 'destructive'
-              ? 'bg-red-600'
+              ? isDark ? 'bg-red-900/60 border border-red-500/40' : 'bg-red-600'
               : button.variant === 'secondary'
-                ? 'bg-stone-200'
-                : 'bg-imperial-green';
+                ? isDark ? 'bg-white/10 border border-white/10' : 'bg-stone-200'
+                : isDark ? 'bg-imperial-gold' : 'bg-imperial-green';
           const textColor =
             button.variant === 'secondary'
-              ? 'text-imperial-brown'
+              ? isDark ? 'text-white' : 'text-imperial-brown'
               : button.variant === 'destructive'
                 ? 'text-white'
-                : 'text-imperial-cream';
+                : isDark ? 'text-night-deep' : 'text-imperial-cream';
 
           return (
             <TouchableOpacity

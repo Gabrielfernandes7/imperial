@@ -9,6 +9,8 @@ import { TableSummary } from '../../network/models/NetworkPlayer';
 import { useNetworkSession } from '../../network/NetworkSessionStore';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { CourtPromptModal } from '../components/CourtPromptModal';
+import { useThemeStore } from '../../store/themeStore';
+import { NightSky } from '../components/NightSky';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'FindMatch'>;
@@ -16,6 +18,8 @@ type Props = {
 };
 
 export function FindMatchScreen({ navigation, route }: Props) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
   const discoveryRef = useRef(new DiscoveryClient());
   const [tables, setTables] = useState<TableSummary[]>([]);
   const [searching, setSearching] = useState(false);
@@ -76,54 +80,61 @@ export function FindMatchScreen({ navigation, route }: Props) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-imperial-cream">
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-night-deep' : 'bg-imperial-cream'}`}>
+      {isDark && <NightSky />}
       <View className="flex-row items-center justify-between px-6 pt-2">
         <TouchableOpacity
-          className="h-12 w-12 items-center justify-center rounded-2xl border border-imperial-brown/15 bg-white"
+          className={`h-12 w-12 items-center justify-center rounded-2xl border ${
+            isDark ? 'border-white/10 bg-white/5' : 'border-imperial-brown/15 bg-white'
+          }`}
           onPress={() => navigation.goBack()}
         >
-          <ChevronLeft color="#5E412F" size={26} />
+          <ChevronLeft color={isDark ? '#FFFFFF' : '#5E412F'} size={26} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={search}
           disabled={searching}
-          className="h-12 w-12 items-center justify-center rounded-2xl bg-imperial-green"
+          className={`h-12 w-12 items-center justify-center rounded-2xl ${isDark ? 'bg-imperial-gold' : 'bg-imperial-green'}`}
         >
           {searching ? (
-            <ActivityIndicator color="#F5F0E6" />
+            <ActivityIndicator color={isDark ? '#0B1026' : '#F5F0E6'} />
           ) : (
-            <RefreshCw color="#F5F0E6" size={22} />
+            <RefreshCw color={isDark ? '#0B1026' : '#F5F0E6'} size={22} />
           )}
         </TouchableOpacity>
       </View>
       <View className="px-6 pt-8">
-        <Text className="text-xs font-bold uppercase tracking-[3px] text-imperial-green">
+        <Text className={`text-xs font-bold uppercase tracking-[3px] ${isDark ? 'text-imperial-gold' : 'text-imperial-green'}`}>
           Rede local
         </Text>
-        <Text className="mt-2 text-4xl font-black text-imperial-brown">Mesas abertas</Text>
-        <Text className="mt-3 text-stone-600">Procurando Hosts na mesma rede Wi-Fi.</Text>
+        <Text className={`mt-2 text-4xl font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>Mesas abertas</Text>
+        <Text className={`mt-3 ${isDark ? 'text-stone-300' : 'text-stone-600'}`}>Procurando Hosts na mesma rede Wi-Fi.</Text>
       </View>
       <ScrollView className="mt-8 flex-1 px-6">
         {tables.map((table) => (
           <TouchableOpacity
             key={table.id}
             onPress={() => join(table)}
-            className="mb-3 flex-row items-center rounded-2xl border border-imperial-gold/25 bg-white p-5"
+            className={`mb-3 flex-row items-center rounded-2xl border p-5 ${
+              isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/25 bg-white'
+            }`}
           >
-            <View className="h-12 w-12 items-center justify-center rounded-xl bg-emerald-50">
-              <Users color="#1E5631" size={24} />
+            <View className={`h-12 w-12 items-center justify-center rounded-xl ${isDark ? 'bg-imperial-gold/10' : 'bg-emerald-50'}`}>
+              <Users color={isDark ? '#C9A227' : '#1E5631'} size={24} />
             </View>
             <View className="ml-4 flex-1">
-              <Text className="text-lg font-black text-imperial-brown">{table.name}</Text>
-              <Text className="mt-1 text-stone-500">
+              <Text className={`text-lg font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>{table.name}</Text>
+              <Text className={`mt-1 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                 {table.playerCount}/{table.maxPlayers} jogadores
               </Text>
             </View>
           </TouchableOpacity>
         ))}
         {!searching && tables.length === 0 && (
-          <View className="rounded-2xl border border-dashed border-stone-300 p-8">
-            <Text className="text-center font-bold text-stone-500">
+          <View className={`rounded-2xl border border-dashed p-8 ${
+            isDark ? 'border-white/10 bg-white/5' : 'border-stone-300'
+          }`}>
+            <Text className={`text-center font-bold ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
               Nenhuma mesa aberta foi encontrada.
             </Text>
           </View>

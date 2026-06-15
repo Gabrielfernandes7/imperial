@@ -6,12 +6,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNetworkSession } from '../../network/NetworkSessionStore';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { CourtPromptModal } from '../components/CourtPromptModal';
+import { useThemeStore } from '../../store/themeStore';
+import { NightSky } from '../components/NightSky';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Lobby'>;
 };
 
 export function LobbyScreen({ navigation }: Props) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
   const lobby = useNetworkSession((state) => state.lobby);
   const snapshot = useNetworkSession((state) => state.snapshot);
   const playerId = useNetworkSession((state) => state.playerId);
@@ -60,54 +64,57 @@ export function LobbyScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-imperial-cream px-6 pb-8">
+    <SafeAreaView className={`flex-1 px-6 pb-8 ${isDark ? 'bg-night-deep' : 'bg-imperial-cream'}`}>
+      {isDark && <NightSky />}
       <View className="flex-row items-center justify-between pt-2">
         <View>
-          <Text className="text-xs font-bold uppercase tracking-[3px] text-imperial-green">
+          <Text className={`text-xs font-bold uppercase tracking-[3px] ${isDark ? 'text-imperial-gold' : 'text-imperial-green'}`}>
             Lobby
           </Text>
-          <Text className="mt-2 text-3xl font-black text-imperial-brown">
+          <Text className={`mt-2 text-3xl font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>
             {lobby.table.name}
           </Text>
         </View>
         <TouchableOpacity
           onPress={exit}
-          className="h-12 w-12 items-center justify-center rounded-2xl bg-white"
+          className={`h-12 w-12 items-center justify-center rounded-2xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-white'}`}
         >
           <LogOut color="#7F1D1D" size={22} />
         </TouchableOpacity>
       </View>
 
-      <Text className="mt-8 text-xs font-bold uppercase tracking-widest text-stone-500">
+      <Text className={`mt-8 text-xs font-bold uppercase tracking-widest ${isDark ? 'text-stone-500' : 'text-stone-500'}`}>
         Jogadores {lobby.players.length}/{lobby.table.maxPlayers}
       </Text>
       <View className="mt-3">
         {lobby.players.map((player) => (
           <View
             key={player.id}
-            className="mb-3 flex-row items-center rounded-2xl border border-imperial-gold/20 bg-white p-4"
+            className={`mb-3 flex-row items-center rounded-2xl border p-4 ${
+              isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/20 bg-white'
+            }`}
           >
-            <View className="h-11 w-11 items-center justify-center rounded-xl bg-amber-50">
+            <View className={`h-11 w-11 items-center justify-center rounded-xl ${isDark ? 'bg-white/10' : 'bg-amber-50'}`}>
               {player.isHost ? (
-                <Crown color="#A56E12" size={23} />
+                <Crown color={isDark ? '#C9A227' : '#A56E12'} size={23} />
               ) : (
-                <User color="#5E412F" size={23} />
+                <User color={isDark ? '#FFFFFF' : '#5E412F'} size={23} />
               )}
             </View>
             <View className="ml-3 flex-1">
-              <Text className="font-black text-imperial-brown">
+              <Text className={`font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>
                 {player.name}{player.id === playerId ? ' (você)' : ''}
               </Text>
-              <Text className="mt-1 text-xs text-stone-500">
+              <Text className={`mt-1 text-xs ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>
                 {player.isHost ? 'Host da mesa' : player.ready ? 'Pronto' : 'Preparando-se'}
               </Text>
             </View>
             <View
               className={`h-9 w-9 items-center justify-center rounded-full ${
-                player.ready ? 'bg-emerald-100' : 'bg-stone-100'
+                player.ready ? (isDark ? 'bg-emerald-900/40' : 'bg-emerald-100') : (isDark ? 'bg-white/10' : 'bg-stone-100')
               }`}
             >
-              {player.ready && <Check color="#1E5631" size={20} />}
+              {player.ready && <Check color={isDark ? '#34D399' : '#1E5631'} size={20} />}
             </View>
           </View>
         ))}
@@ -121,14 +128,16 @@ export function LobbyScreen({ navigation }: Props) {
             disabled={!canStart}
             onPress={startMatch}
             className={`items-center rounded-2xl py-5 ${
-              canStart ? 'bg-imperial-green' : 'bg-stone-300'
+              canStart ? (isDark ? 'bg-imperial-gold' : 'bg-imperial-green') : (isDark ? 'bg-white/10' : 'bg-stone-300')
             }`}
           >
-            <Text className="text-lg font-bold text-white">Iniciar partida</Text>
+            <Text className={`text-lg font-bold ${canStart && isDark ? 'text-night-deep' : 'text-white'}`}>Iniciar partida</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={exit}
-            className="mt-3 items-center rounded-2xl border border-red-200 bg-white py-4"
+            className={`mt-3 items-center rounded-2xl border py-4 ${
+              isDark ? 'border-red-500/30 bg-red-900/20' : 'border-red-200 bg-white'
+            }`}
           >
             <Text className="font-bold text-red-800">Encerrar mesa</Text>
           </TouchableOpacity>
@@ -137,10 +146,12 @@ export function LobbyScreen({ navigation }: Props) {
         <TouchableOpacity
           onPress={() => setReady(!self.ready)}
           className={`items-center rounded-2xl py-5 ${
-            self.ready ? 'bg-imperial-brown' : 'bg-imperial-green'
+            self.ready
+              ? isDark ? 'bg-white/10 border border-white/20' : 'bg-imperial-brown'
+              : isDark ? 'bg-imperial-gold' : 'bg-imperial-green'
           }`}
         >
-          <Text className="text-lg font-bold text-white">
+          <Text className={`text-lg font-bold ${!self.ready && isDark ? 'text-night-deep' : 'text-white'}`}>
             {self.ready ? 'Cancelar pronto' : 'Estou pronto'}
           </Text>
         </TouchableOpacity>

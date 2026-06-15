@@ -12,6 +12,8 @@ import { InfluenceCard } from '../components/InfluenceCard';
 import { PlayerCard } from '../components/PlayerCard';
 import { useGameEngine } from '../hooks/useGameEngine';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { useThemeStore } from '../../store/themeStore';
+import { NightSky } from '../components/NightSky';
 import { ACTIONS, ActionType } from '../../game/models/ActionType';
 import { CHARACTERS, CharacterType } from '../../game/models/Character';
 import { GamePhase } from '../../game/models/GamePhase';
@@ -36,6 +38,9 @@ const ACTION_DETAILS: Record<ActionType, string> = {
 
 export function GameScreen({ navigation, route }: GameScreenProps) {
   const { playerNames, mode } = route.params;
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+
   const {
     state,
     initGame,
@@ -191,7 +196,7 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
       setPromptState({
         title: 'Poder do Diplomata',
         subtitle: 'Escolha como quer usar a negociação.',
-        icon: <Eye color="#1E5631" size={20} />,
+        icon: <Eye color={isDark ? "#C9A227" : "#1E5631"} size={20} />,
         buttons: [
           {
             label: 'Trocar 1 carta',
@@ -228,7 +233,7 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
       setPromptState({
         title: 'Escolha o alvo',
         subtitle: ACTIONS[type].name,
-        icon: <Swords color="#A56E12" size={20} />,
+        icon: <Swords color={isDark ? "#C9A227" : "#A56E12"} size={20} />,
         buttons: targets.map((target) => ({
           label: target.name,
           onPress: () => {
@@ -299,24 +304,25 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-imperial-cream" edges={['top', 'bottom']}>
-      <View className="flex-row items-center justify-between border-b border-imperial-gold/20 bg-white/90 px-4 py-3">
+    <SafeAreaView className={`flex-1 ${isDark ? 'bg-night-deep' : 'bg-imperial-cream'}`} edges={['top', 'bottom']}>
+      {isDark && <NightSky />}
+      <View className={`flex-row items-center justify-between border-b ${isDark ? 'border-white/10 bg-night-mid/80' : 'border-imperial-gold/20 bg-white/90'} px-4 py-3`}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          className="h-10 w-10 items-center justify-center rounded-xl bg-stone-100"
+          className={`h-10 w-10 items-center justify-center rounded-xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-stone-100'}`}
         >
-          <ChevronLeft color="#5E412F" size={24} />
+          <ChevronLeft color={isDark ? "#FFFFFF" : "#5E412F"} size={24} />
         </TouchableOpacity>
         <View className="items-center">
-          <Text className="text-[10px] font-bold uppercase tracking-[2px] text-stone-400">
+          <Text className={`text-[10px] font-bold uppercase tracking-[2px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
             Turno {state.turnNumber}
           </Text>
-          <Text className="mt-1 font-bold text-imperial-green">
+          <Text className={`mt-1 font-bold ${isDark ? 'text-imperial-gold' : 'text-imperial-green'}`}>
             {phaseLabel(state, human.id)}
           </Text>
         </View>
-        <View className="h-10 min-w-10 items-center justify-center rounded-xl border border-imperial-gold/20 bg-amber-50 px-2">
-          <Text className="text-xs font-black text-amber-900">{human.coins}</Text>
+        <View className={`h-10 min-w-10 items-center justify-center rounded-xl border ${isDark ? 'border-imperial-gold/30 bg-imperial-gold/10' : 'border-imperial-gold/20 bg-amber-50'} px-2`}>
+          <Text className={`text-xs font-black ${isDark ? 'text-imperial-gold' : 'text-amber-900'}`}>{human.coins}</Text>
         </View>
       </View>
 
@@ -337,11 +343,11 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
         </View>
 
         <View className="mb-2 flex-row items-center">
-          <View className="h-px flex-1 bg-imperial-gold/20" />
-          <Text className="mx-3 text-[10px] font-bold uppercase tracking-[2px] text-stone-400">
+          <View className={`h-px flex-1 ${isDark ? 'bg-white/10' : 'bg-imperial-gold/20'}`} />
+          <Text className={`mx-3 text-[10px] font-bold uppercase tracking-[2px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
             Corte
           </Text>
-          <View className="h-px flex-1 bg-imperial-gold/20" />
+          <View className={`h-px flex-1 ${isDark ? 'bg-white/10' : 'bg-imperial-gold/20'}`} />
         </View>
 
         {state.players.slice(1).map((player) => (
@@ -361,7 +367,7 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
         <View className="h-6" />
       </ScrollView>
 
-      <View className="border-t border-imperial-gold/20 bg-white px-4 pb-5 pt-4">
+      <View className={`border-t ${isDark ? 'border-white/10 bg-night-mid' : 'border-imperial-gold/20 bg-white'} px-4 pb-5 pt-4`}>
         {isHumanRevealing ? (
           <ResponseNotice
             icon="eye"
@@ -379,12 +385,12 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
               disabled={selectedExchangeIds.length !== 1}
               onPress={() => exchangeCards(human.id, selectedExchangeIds)}
               className={`mt-3 items-center rounded-2xl py-4 ${
-                selectedExchangeIds.length === 1 ? 'bg-imperial-green' : 'bg-stone-200'
+                selectedExchangeIds.length === 1 ? (isDark ? 'bg-imperial-gold' : 'bg-imperial-green') : (isDark ? 'bg-white/5' : 'bg-stone-200')
               }`}
             >
               <Text
                 className={`font-bold ${
-                  selectedExchangeIds.length === 1 ? 'text-white' : 'text-stone-400'
+                  selectedExchangeIds.length === 1 ? (isDark ? 'text-night-deep' : 'text-white') : (isDark ? 'text-stone-600' : 'text-stone-400')
                 }`}
               >
                 Confirmar troca
@@ -427,24 +433,24 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
             />
             <TouchableOpacity
               onPress={() => setIsSelectingSpyTarget(false)}
-              className="mt-3 items-center rounded-2xl bg-stone-200 py-4"
+              className={`mt-3 items-center rounded-2xl py-4 ${isDark ? 'bg-white/10' : 'bg-stone-200'}`}
             >
-              <Text className="font-bold text-stone-600">Cancelar espionagem</Text>
+              <Text className={`font-bold ${isDark ? 'text-white' : 'text-stone-600'}`}>Cancelar espionagem</Text>
             </TouchableOpacity>
           </View>
         ) : isHumanTurn && state.phase === GamePhase.TURN_START ? (
           <View>
             {state.config.mode === GameMode.INICIANTE && (
-              <View className="mb-3 rounded-2xl border border-imperial-gold/20 bg-amber-50 p-4">
-                <Text className="text-[10px] font-bold uppercase tracking-[2px] text-imperial-green">
+              <View className={`mb-3 rounded-2xl border ${isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/20 bg-amber-50'} p-4`}>
+                <Text className={`text-[10px] font-bold uppercase tracking-[2px] ${isDark ? 'text-imperial-gold' : 'text-imperial-green'}`}>
                   Conselho da Corte
                 </Text>
-                <Text className="mt-1 text-sm leading-5 text-stone-600">
+                <Text className={`mt-1 text-sm leading-5 ${isDark ? 'text-stone-300' : 'text-stone-600'}`}>
                   {getBeginnerAdvice(state, human.id)}
                 </Text>
               </View>
             )}
-            <Text className="mb-3 text-xs font-bold uppercase tracking-[2px] text-stone-400">
+            <Text className={`mb-3 text-xs font-bold uppercase tracking-[2px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
               Escolha sua ação
             </Text>
             <View className="flex-row flex-wrap justify-between">
@@ -477,15 +483,15 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
         ) : isHumanTurn && state.phase === GamePhase.ACTION_DECLARED ? (
           <TouchableOpacity
             onPress={handleResolveAction}
-            className="flex-row items-center justify-center rounded-2xl bg-imperial-green py-4"
+            className={`flex-row items-center justify-center rounded-2xl py-4 ${isDark ? 'bg-imperial-gold' : 'bg-imperial-green'}`}
           >
-            <Swords color="#F5F0E6" size={20} />
-            <Text className="ml-2 font-bold text-imperial-cream">Executar ação</Text>
+            <Swords color={isDark ? "#0B1026" : "#F5F0E6"} size={20} />
+            <Text className={`ml-2 font-bold ${isDark ? 'text-night-deep' : 'text-imperial-cream'}`}>Executar ação</Text>
           </TouchableOpacity>
         ) : isHumanTurn && state.phase === GamePhase.TURN_END ? (
           <TouchableOpacity
             onPress={endTurn}
-            className="items-center rounded-2xl bg-imperial-brown py-4"
+            className={`items-center rounded-2xl py-4 ${isDark ? 'bg-white/10 border border-white/20' : 'bg-imperial-brown'}`}
           >
             <Text className="font-bold text-white">Encerrar turno</Text>
           </TouchableOpacity>
@@ -512,18 +518,18 @@ export function GameScreen({ navigation, route }: GameScreenProps) {
             ? `${peekedPlayerName} teve esta carta escolhida.`
             : 'Visualização privada da corte.'
         }
-        icon={<Eye color="#1E5631" size={20} />}
+        icon={<Eye color={isDark ? "#C9A227" : "#1E5631"} size={20} />}
         onClose={() => setPeekModalVisible(false)}
       >
         {state.privatePeekedInfluence?.influence && (
           <View className="mt-1 items-center">
-            <View className="w-52 rounded-[28px] border border-imperial-gold/25 bg-white p-3 shadow-sm">
+            <View className={`w-52 rounded-[28px] border ${isDark ? 'border-white/10 bg-night-mid' : 'border-imperial-gold/25 bg-white'} p-3 shadow-sm`}>
               <InfluenceCard
                 influence={state.privatePeekedInfluence.influence}
                 isOwner
               />
             </View>
-            <Text className="mt-4 text-center text-xs uppercase tracking-[3px] text-stone-400">
+            <Text className={`mt-4 text-center text-xs uppercase tracking-[3px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>
               Informação reservada
             </Text>
           </View>
@@ -661,10 +667,13 @@ function ResponseActions({
   onPrimary: () => void;
   onSecondary: () => void;
 }) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+  
   return (
     <View>
-      <Text className="text-lg font-black text-imperial-brown">{title}</Text>
-      <Text className="mt-1 text-sm leading-5 text-stone-500">{description}</Text>
+      <Text className={`text-lg font-black ${isDark ? 'text-white' : 'text-imperial-brown'}`}>{title}</Text>
+      <Text className={`mt-1 text-sm leading-5 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>{description}</Text>
       <View className="mt-4 flex-row">
         <TouchableOpacity
           onPress={onPrimary}
@@ -674,7 +683,7 @@ function ResponseActions({
         </TouchableOpacity>
         <TouchableOpacity
           onPress={onSecondary}
-          className="ml-2 flex-1 items-center rounded-2xl bg-imperial-gold py-4"
+          className={`ml-2 flex-1 items-center rounded-2xl py-4 ${isDark ? 'bg-imperial-gold' : 'bg-imperial-gold'}`}
         >
           <Text className="font-bold text-imperial-brown">{secondaryLabel}</Text>
         </TouchableOpacity>
@@ -692,18 +701,21 @@ function ResponseNotice({
   title: string;
   description: string;
 }) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+
   return (
-    <View className="flex-row items-center rounded-2xl border border-imperial-gold/25 bg-amber-50 p-4">
-      <View className="mr-3 h-10 w-10 items-center justify-center rounded-xl bg-white">
+    <View className={`flex-row items-center rounded-2xl border ${isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/25 bg-amber-50'} p-4`}>
+      <View className={`mr-3 h-10 w-10 items-center justify-center rounded-xl ${isDark ? 'bg-white/10' : 'bg-white'}`}>
         {icon === 'eye' ? (
-          <Eye color="#A56E12" size={20} />
+          <Eye color={isDark ? "#C9A227" : "#A56E12"} size={20} />
         ) : (
-          <ShieldAlert color="#A56E12" size={20} />
+          <ShieldAlert color={isDark ? "#C9A227" : "#A56E12"} size={20} />
         )}
       </View>
       <View className="flex-1">
-        <Text className="font-bold text-imperial-brown">{title}</Text>
-        <Text className="mt-1 text-xs leading-4 text-stone-500">{description}</Text>
+        <Text className={`font-bold ${isDark ? 'text-white' : 'text-imperial-brown'}`}>{title}</Text>
+        <Text className={`mt-1 text-xs leading-4 ${isDark ? 'text-stone-400' : 'text-stone-500'}`}>{description}</Text>
       </View>
     </View>
   );

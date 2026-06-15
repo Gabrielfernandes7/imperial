@@ -2,12 +2,16 @@ import React, { useRef, useEffect } from 'react';
 import { ScrollView, View, Text } from 'react-native';
 import { GameEvent } from '../../game/models/GameEvent';
 
+import { useThemeStore } from '../../store/themeStore';
+
 interface GameEventListProps {
   events: GameEvent[];
 }
 
 export const GameEventList: React.FC<GameEventListProps> = ({ events }) => {
   const scrollViewRef = useRef<ScrollView>(null);
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     // Scroll to bottom when new events arrive
@@ -17,9 +21,9 @@ export const GameEventList: React.FC<GameEventListProps> = ({ events }) => {
   }, [events.length]);
 
   return (
-    <View className="h-24 bg-white rounded-xl border border-imperial-gold/20 overflow-hidden shadow-inner">
-      <View className="bg-imperial-gold/10 px-3 py-1 border-b border-imperial-gold/10">
-        <Text className="text-[10px] font-bold text-imperial-brown uppercase tracking-widest">
+    <View className={`h-24 rounded-xl border overflow-hidden shadow-inner ${isDark ? 'bg-night-mid/80 border-white/10' : 'bg-white border-imperial-gold/20'}`}>
+      <View className={`px-3 py-1 border-b ${isDark ? 'bg-white/5 border-white/5' : 'bg-imperial-gold/10 border-imperial-gold/10'}`}>
+        <Text className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-imperial-gold' : 'text-imperial-brown'}`}>
           Diário da Corte
         </Text>
       </View>
@@ -30,16 +34,16 @@ export const GameEventList: React.FC<GameEventListProps> = ({ events }) => {
       >
         {events.map((event, index) => (
           <View key={event.id} className="mb-2 flex-row">
-            <Text className="text-[10px] font-bold text-imperial-brown/50 mr-2 w-4">
+            <Text className={`text-[10px] font-bold mr-2 w-4 ${isDark ? 'text-stone-500' : 'text-imperial-brown/50'}`}>
               {event.turn}
             </Text>
-            <Text className="text-xs text-text flex-1">
+            <Text className={`text-xs flex-1 ${isDark ? 'text-stone-300' : 'text-text'}`}>
               {(event as any).description || formatEventDescription(event)}
             </Text>
           </View>
         ))}
         {events.length === 0 && (
-          <Text className="text-xs text-text/40 italic text-center mt-4">
+          <Text className={`text-xs italic text-center mt-4 ${isDark ? 'text-stone-600' : 'text-text/40'}`}>
             Aguardando eventos...
           </Text>
         )}

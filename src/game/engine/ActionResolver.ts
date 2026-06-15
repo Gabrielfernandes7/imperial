@@ -1,14 +1,12 @@
 import { MatchState } from '../models/MatchState';
 import { ActionType } from '../models/ActionType';
 import { ACTIONS } from '../models/ActionType';
-import { CharacterType } from '../models/Character';
 import { ActionResult } from '../models/ActionResult';
 import { GamePhase } from '../models/GamePhase';
 import { GameRules } from '../rules/GameRules';
 import { GameLogger } from './GameLogger';
 import { GameEventType } from '../models/GameEvent';
 import { generateId } from '../utils/id';
-import { shuffle } from '../utils/shuffle';
 
 export class ActionResolver {
   public static resolve(

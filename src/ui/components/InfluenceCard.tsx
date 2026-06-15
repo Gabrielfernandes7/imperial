@@ -3,6 +3,8 @@ import { View, Text, ImageBackground } from 'react-native';
 import { Influence } from '../../game/models/Influence';
 import { Crown } from 'lucide-react-native';
 
+import { useThemeStore } from '../../store/themeStore';
+
 type CardInfluence = Pick<Influence, 'id' | 'revealed'> & {
   character?: Influence['character'];
 };
@@ -28,6 +30,8 @@ export const InfluenceCard: React.FC<InfluenceCardProps> = ({
   highlighted = false,
   forceFaceDown = false,
 }) => {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
   const isRevealed = influence.revealed;
   const showFront =
     !forceFaceDown &&
@@ -41,10 +45,10 @@ export const InfluenceCard: React.FC<InfluenceCardProps> = ({
       <View
         className={`rounded-xl overflow-hidden border-2 shadow-sm ${
           isRevealed
-            ? 'border-red-400 opacity-60'
+            ? (isDark ? 'border-red-900 opacity-60' : 'border-red-400 opacity-60')
             : highlighted
-              ? 'border-imperial-green'
-              : 'border-imperial-gold/30'
+              ? (isDark ? 'border-imperial-gold' : 'border-imperial-green')
+              : (isDark ? 'border-white/10' : 'border-imperial-gold/30')
         }`}
         style={{
           width: '85%',
@@ -57,10 +61,10 @@ export const InfluenceCard: React.FC<InfluenceCardProps> = ({
           className="flex-1 justify-end"
           resizeMode="cover"
         >
-          <View className="bg-black/60 px-1.5 py-1">
+          <View className={`px-1.5 py-1 ${isDark ? 'bg-black/70' : 'bg-black/60'}`}>
             <Text
               className={`text-[9px] font-black text-center uppercase tracking-wide ${
-                isRevealed ? 'text-red-400' : 'text-imperial-cream'
+                isRevealed ? (isDark ? 'text-red-500' : 'text-red-400') : 'text-imperial-cream'
               }`}
               numberOfLines={1}
             >
@@ -78,7 +82,7 @@ export const InfluenceCard: React.FC<InfluenceCardProps> = ({
 
             {isRevealed && (
               <Text
-                className="text-[6px] text-red-300 text-center font-bold uppercase"
+                className={`text-[6px] text-center font-bold uppercase ${isDark ? 'text-red-400' : 'text-red-300'}`}
                 numberOfLines={1}
               >
                 Revelado
@@ -92,10 +96,12 @@ export const InfluenceCard: React.FC<InfluenceCardProps> = ({
 
   return (
     <View
-      className={`rounded-xl border-2 items-center justify-center p-1.5 bg-imperial-brown ${
+      className={`rounded-xl border-2 items-center justify-center p-1.5 ${
+        isDark ? 'bg-night-mid border-imperial-gold/30' : 'bg-imperial-brown border-imperial-brown'
+      } ${
         highlighted
-          ? 'border-imperial-gold'
-          : 'border-imperial-brown shadow-inner'
+          ? (isDark ? 'border-imperial-gold' : 'border-imperial-gold')
+          : 'shadow-inner'
       }`}
       style={{
         width: '85%',
@@ -103,7 +109,7 @@ export const InfluenceCard: React.FC<InfluenceCardProps> = ({
         alignSelf: 'center',
       }}
     >
-      <View className="border border-imperial-gold/30 rounded-lg flex-1 w-full items-center justify-center bg-stone-900/10">
+      <View className={`border rounded-lg flex-1 w-full items-center justify-center ${isDark ? 'border-imperial-gold/20 bg-black/20' : 'border-imperial-gold/30 bg-stone-900/10'}`}>
         <Crown color="#C9A227" size={18} strokeWidth={1.5} />
         <Text className="text-[6px] font-black text-imperial-gold/80 uppercase tracking-widest mt-1 text-center">
           Imperial

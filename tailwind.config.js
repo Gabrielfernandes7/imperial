@@ -14,9 +14,11 @@ module.exports = {
         background: '#FAF8F3',
         text: '#1A1A1A',
         night: {
-          deep: '#0B1026',
-          mid: '#16213E',
-          accent: '#1F4068',
+          void: '#020408',    // Quase preto, para máxima profundidade
+          deep: '#050B18',    // Azul meia-noite base
+          dust: '#1A2238',    // Azul poeira estelar para camadas médias
+          star: '#E2E8F0',    // Cor das estrelas (off-white azulado)
+          glow: 'rgba(100, 149, 237, 0.3)', // Brilho azul suave
         },
       },
     },

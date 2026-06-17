@@ -27,27 +27,27 @@ export function ActionButton({
   const getStyles = () => {
     if (disabled) {
       return {
-        bg: isDark ? 'bg-white/5 border-white/5' : 'bg-stone-100 border-stone-200',
-        text: isDark ? 'text-stone-600' : 'text-stone-400',
-        detail: isDark ? 'text-stone-700' : 'text-stone-400',
+        bg: isDark ? 'bg-night-mid border-white/10' : 'bg-stone-100 border-stone-200',
+        text: isDark ? 'text-stone-500' : 'text-stone-400',
+        detail: isDark ? 'text-stone-500' : 'text-stone-400',
       };
     }
     if (tone === 'danger') {
       return {
-        bg: isDark ? 'bg-red-900/30 border-red-500/50' : 'bg-red-50 border-red-500',
+        bg: isDark ? 'bg-red-950 border-red-500/70' : 'bg-red-50 border-red-500',
         text: isDark ? 'text-red-400' : 'text-red-800',
         detail: isDark ? 'text-stone-400' : 'text-stone-600',
       };
     }
     if (tone === 'gold') {
       return {
-        bg: isDark ? 'bg-imperial-gold/20 border-imperial-gold' : 'bg-amber-50 border-imperial-gold',
+        bg: isDark ? 'bg-night-accent border-imperial-gold' : 'bg-amber-50 border-imperial-gold',
         text: isDark ? 'text-imperial-gold' : 'text-amber-900',
         detail: isDark ? 'text-stone-400' : 'text-stone-600',
       };
     }
     return {
-      bg: isDark ? 'bg-emerald-900/20 border-emerald-500/50' : 'bg-emerald-50 border-imperial-green',
+      bg: isDark ? 'bg-night-accent border-emerald-500/70' : 'bg-emerald-50 border-imperial-green',
       text: isDark ? 'text-emerald-400' : 'text-imperial-green',
       detail: isDark ? 'text-stone-400' : 'text-stone-600',
     };

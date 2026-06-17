@@ -31,7 +31,14 @@ function attachClient(
   client: GameClient,
   set: (partial: Partial<NetworkSessionState>) => void,
 ): void {
-  client.on('connection', (connectionState) => set({ connectionState }));
+  client.on('connection', (connectionState) =>
+    set({
+      connectionState,
+      ...(connectionState === ConnectionState.DISCONNECTED
+        ? { lobby: undefined, snapshot: undefined }
+        : {}),
+    }),
+  );
   client.on('lobby', (lobby) =>
     set({
       lobby,

@@ -31,12 +31,12 @@ export function CourtModal({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View className={`flex-1 items-center justify-center px-6 ${isDark ? 'bg-black/85' : 'bg-black/75'}`}>
-        <View className={`absolute -left-10 top-20 h-28 w-28 rounded-full ${isDark ? 'bg-imperial-gold/15' : 'bg-imperial-gold/10'}`} />
-        <View className={`absolute -right-12 bottom-24 h-36 w-36 rounded-full ${isDark ? 'bg-night-accent/35' : 'bg-imperial-green/10'}`} />
+      <View className={`flex-1 items-center justify-center px-6 ${isDark ? 'bg-black/95' : 'bg-black/75'}`}>
+        <View className={`absolute -left-10 top-20 h-28 w-28 rounded-full ${isDark ? 'bg-imperial-gold/20' : 'bg-imperial-gold/10'}`} />
+        <View className={`absolute -right-12 bottom-24 h-36 w-36 rounded-full ${isDark ? 'bg-night-accent/70' : 'bg-imperial-green/10'}`} />
 
         <View className={`w-full max-w-sm overflow-hidden rounded-[32px] border shadow-2xl ${
-          isDark ? 'border-white/10 bg-night-mid' : 'border-imperial-gold/30 bg-[#F7F0E3]'
+          isDark ? 'border-imperial-gold/35 bg-night-mid' : 'border-imperial-gold/30 bg-[#F7F0E3]'
         }`}>
           <View className="h-1.5 bg-imperial-gold" />
 
@@ -44,7 +44,7 @@ export function CourtModal({
             <View className="flex-1 flex-row items-center pr-3">
               {icon ? (
                 <View className={`mr-3 h-12 w-12 items-center justify-center rounded-2xl border shadow-sm ${
-                  isDark ? 'border-white/10 bg-white/5' : 'border-imperial-gold/30 bg-white'
+                  isDark ? 'border-imperial-gold/25 bg-night-accent' : 'border-imperial-gold/30 bg-white'
                 }`}>
                   {icon}
                 </View>
@@ -60,7 +60,7 @@ export function CourtModal({
             <TouchableOpacity
               onPress={onClose}
               className={`h-10 w-10 items-center justify-center rounded-full border ${
-                isDark ? 'border-white/10 bg-white/5' : 'border-stone-200 bg-white'
+                isDark ? 'border-white/20 bg-night-accent' : 'border-stone-200 bg-white'
               }`}
             >
               <X color={isDark ? '#FFFFFF' : '#5E412F'} size={18} />

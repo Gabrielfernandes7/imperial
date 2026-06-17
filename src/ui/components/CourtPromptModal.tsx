@@ -35,9 +35,9 @@ export function CourtPromptModal({
         {buttons.map((button) => {
           const variant =
             button.variant === 'destructive'
-              ? isDark ? 'bg-red-900/60 border border-red-500/40' : 'bg-red-600'
+              ? isDark ? 'bg-red-950 border border-red-500/70' : 'bg-red-600'
               : button.variant === 'secondary'
-                ? isDark ? 'bg-white/10 border border-white/10' : 'bg-stone-200'
+                ? isDark ? 'bg-night-accent border border-white/20' : 'bg-stone-200'
                 : isDark ? 'bg-imperial-gold' : 'bg-imperial-green';
           const textColor =
             button.variant === 'secondary'

@@ -39,6 +39,7 @@ export class GameClient {
 
   private playerId?: string;
   private connectionState = ConnectionState.IDLE;
+  private intentionalDisconnect = false;
 
   constructor(
     readonly clientId: string,
@@ -47,6 +48,7 @@ export class GameClient {
 
   connect(host: string, port = DEFAULT_GAME_PORT): Promise<void> {
     this.disconnect();
+    this.intentionalDisconnect = false;
     this.setConnectionState(ConnectionState.CONNECTING);
 
     return new Promise((resolve, reject) => {
@@ -96,12 +98,16 @@ export class GameClient {
         if (this.socket === socket) {
           this.socket = undefined;
           this.setConnectionState(ConnectionState.DISCONNECTED);
+          if (!this.intentionalDisconnect) {
+            this.emit('error', 'Conexão com o Host encerrada.');
+          }
         }
       });
     });
   }
 
   disconnect(): void {
+    this.intentionalDisconnect = true;
     this.socket?.destroy();
     this.socket = undefined;
     if (this.connectionState !== ConnectionState.IDLE) {

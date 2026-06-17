@@ -69,6 +69,12 @@ export class ClientManager {
     }
   }
 
+  sendAll(message: ServerMessage): void {
+    for (const connection of this.connections.values()) {
+      this.send(connection.socket, message);
+    }
+  }
+
   destroyAll(): void {
     for (const connection of this.connections.values()) {
       connection.socket.destroy();

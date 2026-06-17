@@ -21,8 +21,8 @@ export const GameEventList: React.FC<GameEventListProps> = ({ events }) => {
   }, [events.length]);
 
   return (
-    <View className={`h-24 rounded-xl border overflow-hidden shadow-inner ${isDark ? 'bg-night-mid/80 border-white/10' : 'bg-white border-imperial-gold/20'}`}>
-      <View className={`px-3 py-1 border-b ${isDark ? 'bg-white/5 border-white/5' : 'bg-imperial-gold/10 border-imperial-gold/10'}`}>
+    <View className={`h-24 rounded-xl border overflow-hidden shadow-inner ${isDark ? 'bg-night-mid border-white/15' : 'bg-white border-imperial-gold/20'}`}>
+      <View className={`px-3 py-1 border-b ${isDark ? 'bg-night-accent border-white/10' : 'bg-imperial-gold/10 border-imperial-gold/10'}`}>
         <Text className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-imperial-gold' : 'text-imperial-brown'}`}>
           Diário da Corte
         </Text>

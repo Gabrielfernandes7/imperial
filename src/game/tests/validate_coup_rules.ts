@@ -47,6 +47,22 @@ challengeThenBlock.passBlockChallenge(truthfulAssassin.id);
 challengeThenBlock.passBlockChallenge(thirdPlayer.id);
 assert(challengeThenBlock.getState().phase === GamePhase.TURN_END, 'Condessa should cancel assassination');
 
+const finalChallengeEngine = new GameEngine(['Gabriel', 'Bot 1'], 0);
+finalChallengeEngine.startGame();
+const [finalActor, finalChallenger] = finalChallengeEngine.debugState().players;
+finalActor.influences[0].character.type = CharacterType.DUQUE;
+finalChallenger.influences[0].revealed = true;
+finalChallengeEngine.declareAction({
+  actorId: finalActor.id,
+  type: ActionType.RECEBER_IMPOSTO,
+});
+finalChallengeEngine.challenge(finalChallenger.id);
+finalChallengeEngine.revealInfluence(finalChallenger.id, finalChallenger.influences[1].id);
+assert(
+  finalChallengeEngine.getState().phase === GamePhase.GAME_OVER,
+  'A failed final challenge must finish the game immediately',
+);
+
 const invalidEngine = new GameEngine(['Gabriel', 'Bot 1', 'Bot 2']);
 invalidEngine.startGame();
 const [invalidActor, invalidOpponent] = invalidEngine.debugState().players;

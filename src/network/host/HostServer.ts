@@ -72,6 +72,9 @@ export class HostServer {
   }
 
   stop(): Promise<void> {
+    this.clients.sendAll(
+      envelope(ServerMessageType.ERROR, { message: 'O Host encerrou a mesa.' }),
+    );
     this.clients.destroyAll();
     if (!this.server) {
       return Promise.resolve();

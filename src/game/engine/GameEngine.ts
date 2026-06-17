@@ -611,7 +611,19 @@ export class GameEngine {
   }
 
   private checkWinner(): void {
-    // Moved to TurnManager
+    const alivePlayers = this.state.players.filter((player) => player.alive);
+    if (alivePlayers.length !== 1 || this.state.phase === GamePhase.GAME_OVER) {
+      return;
+    }
+
+    const [winner] = alivePlayers;
+    this.state.winnerId = winner.id;
+    this.state.phase = GamePhase.GAME_OVER;
+    this.logEvent(GameEventType.GAME_FINISHED, {
+      description: `FIM DE JOGO! ${winner.name} é o novo Imperador!`,
+      winnerId: winner.id,
+      winnerName: winner.name,
+    });
   }
 
   private allPlayersPassed(eligibleIds: string[], passedIds: string[]): boolean {

@@ -40,9 +40,9 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
 
   const getContainerStyles = () => {
     if (isDark) {
-      if (isCurrent) return 'border-imperial-gold bg-imperial-gold/20';
-      if (canSelectCard) return 'border-imperial-gold/50 bg-white/5';
-      return 'border-white/10 bg-night-mid';
+      if (isCurrent) return 'border-imperial-gold bg-night-accent';
+      if (canSelectCard) return 'border-imperial-gold/70 bg-night-accent';
+      return 'border-white/15 bg-night-mid';
     } else {
       if (isCurrent) return 'border-imperial-gold bg-imperial-gold/10';
       if (canSelectCard) return 'border-imperial-green/50 bg-imperial-green/5';

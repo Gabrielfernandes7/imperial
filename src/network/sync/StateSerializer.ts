@@ -48,6 +48,8 @@ export class StateSerializer {
         name: player.name,
         coins: player.coins,
         alive: player.alive,
+        isBot: player.isBot,
+        botPersonality: player.botPersonality,
         influenceCount:
           player.id === exchangingPlayerId && player.id !== recipientPlayerId
             ? Math.max(0, hiddenCount - 1)

@@ -19,6 +19,7 @@ import { generateId } from '../utils/id';
 import { shuffle } from '../utils/shuffle';
 import { StateValidator } from './StateValidator';
 import { GameMode } from '../models/GameMode';
+import { BOT_PERSONALITY_ROTATION } from '../models/BotPersonality';
 import { TurnManager } from './TurnManager';
 import { ActionResolver } from './ActionResolver';
 export class GameEngine {
@@ -42,16 +43,27 @@ export class GameEngine {
   ) {
     // ...
 
-    const players: Player[] = playerNames.map((name, index) => ({
-      id: options?.playerIds?.[index] ?? generateId(),
-      name,
-      coins: 0,
-      influences: [],
-      alive: true,
-      isBot: options?.allHuman
+    let botPersonalityIndex = 0;
+    const players: Player[] = playerNames.map((name, index) => {
+      const isBot = options?.allHuman
         ? false
-        : humanPlayerIndex === null || index !== humanPlayerIndex,
-    }));
+        : humanPlayerIndex === null || index !== humanPlayerIndex;
+      const botPersonality = isBot
+        ? BOT_PERSONALITY_ROTATION[
+            botPersonalityIndex++ % BOT_PERSONALITY_ROTATION.length
+          ]
+        : undefined;
+
+      return {
+        id: options?.playerIds?.[index] ?? generateId(),
+        name,
+        coins: 0,
+        influences: [],
+        alive: true,
+        isBot,
+        botPersonality,
+      };
+    });
 
     this.state = {
       config: {

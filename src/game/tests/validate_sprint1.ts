@@ -4,6 +4,7 @@ import { shuffle } from '../utils/shuffle';
 import { GameRules } from '../rules/GameRules';
 import { GamePhase } from '../models/GamePhase';
 import { CharacterType } from '../models/Character';
+import { BotPersonalityType } from '../models/BotPersonality';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -45,6 +46,15 @@ const state = engine.getState();
 assert(state.phase === GamePhase.TURN_START, 'Should be in TURN_START phase after startGame');
 assert(state.turnNumber === 1, 'Should be turn 1');
 assert(state.deck.length === 15 - (3 * 2), 'Deck should have 9 cards left (15 - 3 players * 2 cards)');
+assert(!state.players[0].botPersonality, 'Human player should not receive a bot personality');
+assert(
+  state.players[1].botPersonality === BotPersonalityType.CAUTELOSO,
+  'First bot should receive the Cauteloso personality in a 1-human table',
+);
+assert(
+  state.players[2].botPersonality === BotPersonalityType.INTRIGANTE,
+  'Second bot should receive the Intrigante personality in a 1-human table',
+);
 
 state.players.forEach(player => {
   assert(player.coins === GameRules.STARTING_COINS, `${player.name} should have 2 coins`);

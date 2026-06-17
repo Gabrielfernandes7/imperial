@@ -4,6 +4,7 @@ import { Block } from '../../game/models/Block';
 import { GameEvent } from '../../game/models/GameEvent';
 import { GamePhase } from '../../game/models/GamePhase';
 import { Influence } from '../../game/models/Influence';
+import { BotPersonalityType } from '../../game/models/BotPersonality';
 
 export interface PublicInfluenceSnapshot {
   id: string;
@@ -16,6 +17,8 @@ export interface PublicPlayerSnapshot {
   name: string;
   coins: number;
   alive: boolean;
+  isBot: boolean;
+  botPersonality?: BotPersonalityType;
   influenceCount: number;
   revealedInfluenceCount: number;
   influences: PublicInfluenceSnapshot[];

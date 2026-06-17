@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Player } from '../../game/models/Player';
+import { BOT_PERSONALITIES, BotPersonalityType } from '../../game/models/BotPersonality';
 import { InfluenceCard } from './InfluenceCard';
 import { CoinCounter } from './CoinCounter';
 
@@ -72,6 +73,10 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
         <CoinCounter amount={player.coins} compact />
       </View>
 
+      {player.isBot && player.botPersonality && (
+        <BotPersonalityBadge type={player.botPersonality} />
+      )}
+
       <View className="flex-row gap-x-8">
         {player.influences.map((inf) => {
           const isSelected = selectedCardIds.includes(inf.id);
@@ -109,3 +114,26 @@ export const PlayerCard: React.FC<PlayerCardProps> = ({
     </View>
   );
 };
+
+function BotPersonalityBadge({ type }: { type: BotPersonalityType }) {
+  const { theme } = useThemeStore();
+  const isDark = theme === 'dark';
+  const personality = BOT_PERSONALITIES[type];
+
+  return (
+    <View className={`mb-3 rounded-xl border px-3 py-2 ${
+      isDark ? 'border-imperial-gold/25 bg-night-accent' : 'border-imperial-gold/25 bg-amber-50'
+    }`}>
+      <Text className={`text-[10px] font-black uppercase tracking-[2px] ${
+        isDark ? 'text-imperial-gold' : 'text-imperial-green'
+      }`}>
+        {personality.name} · {personality.tagline}
+      </Text>
+      <Text className={`mt-1 text-[11px] leading-4 ${
+        isDark ? 'text-stone-300' : 'text-stone-600'
+      }`}>
+        {personality.tableRead}
+      </Text>
+    </View>
+  );
+}

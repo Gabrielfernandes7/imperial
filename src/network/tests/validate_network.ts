@@ -65,6 +65,7 @@ const hostInitial = authority.getSnapshot(host.id);
 const guestInitial = authority.getSnapshot(guest.id);
 assert(hostInitial.self.influences.length === 2, 'Host must receive its own cards');
 assert(guestInitial.self.influences.length === 2, 'Guest must receive its own cards');
+assert(!hostInitial.players.some((player) => player.botPersonality), 'LAN players must not expose bot personalities');
 assert(!('deck' in hostInitial), 'Snapshot must never expose the deck');
 
 const guestPublicFromHost = hostInitial.players.find((player) => player.id === guest.id);
